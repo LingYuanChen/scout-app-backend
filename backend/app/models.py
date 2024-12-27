@@ -59,10 +59,13 @@ class UsersPublic(SQLModel):
     count: int
 
 
-# Shared properties
+# Shared properties for Item (catalog)
 class ItemBase(SQLModel):
-    title: str = Field(min_length=1, max_length=255)
+    title: str = Field(
+        min_length=1, max_length=255
+    )  # Keep original 'title' instead of 'name'
     description: str | None = Field(default=None, max_length=255)
+    category: str | None = Field(default=None, max_length=100)
 
 
 # Properties to receive on item creation
@@ -78,11 +81,9 @@ class ItemUpdate(ItemBase):
 # Database model, database table inferred from class name
 class Item(ItemBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    title: str = Field(max_length=255)
-    owner_id: uuid.UUID = Field(
-        foreign_key="user.id", nullable=False, ondelete="CASCADE"
-    )
-    owner: User | None = Relationship(back_populates="items")
+    owner_id: uuid.UUID = Field(foreign_key="user.id")
+    owner: User = Relationship(back_populates="items")
+    event_items: list["PackingItem"] = Relationship(back_populates="item")
 
 
 # Properties to return via API, id is always required
@@ -117,17 +118,61 @@ class NewPassword(SQLModel):
     new_password: str = Field(min_length=8, max_length=40)
 
 
-class Event(SQLModel, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+class EventBase(SQLModel):
     name: str = Field(max_length=255)
     description: str | None = Field(default=None, max_length=1000)
     start_date: str = Field(max_length=10)  # Format: YYYY-MM-DD
     end_date: str = Field(max_length=10)
+
+
+class PackingItemInCreate(SQLModel):
+    item_id: uuid.UUID
+    quantity: int = Field(default=1)
+    required: bool = Field(default=True)
+    notes: str | None = None
+
+
+class EventCreate(EventBase):
+    packing_items: list[PackingItemInCreate] | None = None
+
+
+# Properties to receive on event update
+class EventUpdate(EventBase):
+    name: str | None = Field(default=None, max_length=255)  # type: ignore
+    description: str | None = Field(default=None, max_length=1000)
+    start_date: str | None = Field(default=None, max_length=10)
+    end_date: str | None = Field(default=None, max_length=10)
+    packing_items: list[PackingItemInCreate] | None = None
+
+
+# Database model
+class Event(EventBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     created_by_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
     created_by: User = Relationship(back_populates="created_events")
     attendees: list["Attendance"] = Relationship(back_populates="event")
     meals: list["Meal"] = Relationship(back_populates="event")
     packing_items: list["PackingItem"] = Relationship(back_populates="event")
+
+
+class PackingItemPublic(SQLModel):
+    item: ItemPublic
+    quantity: int
+    required: bool
+    notes: str | None
+
+
+# Properties to return via API
+class EventPublic(EventBase):
+    id: uuid.UUID
+    created_by_id: uuid.UUID
+    packing_items: list[PackingItemPublic]
+
+
+# Response model for multiple events
+class EventsPublic(SQLModel):
+    data: list[EventPublic]
+    count: int
 
 
 class Attendance(SQLModel, table=True):
@@ -158,9 +203,38 @@ class MealChoice(SQLModel, table=True):
     meal: Meal = Relationship(back_populates="chosen_by")
 
 
-class PackingItem(SQLModel, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    event_id: uuid.UUID = Field(foreign_key="event.id", nullable=False)
-    item_name: str = Field(max_length=255)
+# Properties for packing items in events
+class PackingItemBase(SQLModel):
     quantity: int = Field(default=1)
-    event: Event = Relationship(back_populates="packing_items")
+    required: bool = Field(default=True)
+    notes: str | None = Field(default=None, max_length=255)
+
+
+class PackingItem(PackingItemBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    event_id: uuid.UUID = Field(foreign_key="event.id")
+    item_id: uuid.UUID = Field(foreign_key="item.id")
+
+    # Relationships
+    event: "Event" = Relationship(back_populates="packing_items")
+    item: Item = Relationship(back_populates="event_items")
+
+
+class PackingItemCreate(SQLModel):
+    item_id: uuid.UUID
+    quantity: int = Field(default=1)
+    required: bool = Field(default=True)
+    notes: str | None = Field(default=None, max_length=255)
+
+
+class PackingItemUpdate(SQLModel):
+    quantity: int | None = None
+    required: bool | None = None
+    notes: str | None = None
+
+
+class PackingItemsPublic(SQLModel):
+    event_name: str
+    event_id: uuid.UUID
+    data: list[PackingItemPublic]
+    count: int
