@@ -12,7 +12,6 @@ from app.models import (
     EventsPublic,
     EventUpdate,
     Item,
-    Message,
     PackingItem,
 )
 
@@ -144,10 +143,13 @@ def update_event(
 
 @router.delete("/{id}")
 def delete_event(
-    session: SessionDep, current_user: CurrentUser, id: uuid.UUID
-) -> Message:
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    id: uuid.UUID,
+) -> Any:
     """
-    Delete an event and all its associated packing items.
+    Delete an event.
     """
     event = session.get(Event, id)
     if not event:
@@ -155,11 +157,8 @@ def delete_event(
     if not current_user.is_superuser and (event.created_by_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
 
-    # Delete associated packing items first
-    for item in event.packing_items:
-        session.delete(item)
-
-    # Then delete the event
+    # No need to manually delete packing items
+    # They will be automatically deleted due to cascade_delete=True
     session.delete(event)
     session.commit()
-    return Message(message="Event and associated packing items deleted successfully")
+    return {"message": "Event deleted"}

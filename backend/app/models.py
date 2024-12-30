@@ -150,9 +150,13 @@ class Event(EventBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     created_by_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
     created_by: User = Relationship(back_populates="created_events")
-    attendees: list["Attendance"] = Relationship(back_populates="event")
-    meals: list["Meal"] = Relationship(back_populates="event")
-    packing_items: list["PackingItem"] = Relationship(back_populates="event")
+    attendees: list["Attendance"] = Relationship(
+        back_populates="event", cascade_delete=True
+    )
+    meals: list["Meal"] = Relationship(back_populates="event", cascade_delete=True)
+    packing_items: list["PackingItem"] = Relationship(
+        back_populates="event", cascade_delete=True
+    )
 
 
 class PackingItemPublic(SQLModel):

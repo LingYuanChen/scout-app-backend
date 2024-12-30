@@ -5,7 +5,7 @@ from sqlmodel import select
 
 import app.crud as crud
 from app.api.deps import AttendanceDep, CurrentUser, EventDep, SessionDep
-from app.models import Attendance, Event, EventPublic, Message, PackingItemsPublic
+from app.models import Attendance, Event, Message, PackingItemsPublic
 
 router = APIRouter(prefix="/attendance", tags=["attendance"])
 
@@ -53,7 +53,8 @@ def leave_event(
     return Message(message="Successfully left the event")
 
 
-@router.get("/my-events", response_model=list[EventPublic])
+# @router.get("/my-events", response_model=list[uuid.UUID])
+@router.get("/my-events")
 def get_my_events(
     session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
 ) -> Any:
@@ -63,14 +64,14 @@ def get_my_events(
     # First get the attended event IDs from Attendance table
     statement = (
         select(Attendance.event_id)
-        .where(Attendance.user_id == current_user.id, Attendance.is_attending is True)
+        .where(Attendance.user_id == current_user.id)
         .offset(skip)
         .limit(limit)
     )
-    event_ids = list(session.exec(statement).all())
+    event_ids = session.exec(statement).all()
     # Then get those events
     if event_ids:
-        events = session.exec(select(Event).where(Event.id.in_(event_ids))).all()
+        events = list(session.exec(select(Event).where(Event.id.in_(event_ids))).all())
         return events
     return []
 
