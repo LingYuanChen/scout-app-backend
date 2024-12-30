@@ -115,7 +115,7 @@ def update_event(
     # Update packing items if provided
     if event_in.packing_items is not None:
         # Delete existing packing items using a separate query
-        session.exec(delete(PackingItem).where(PackingItem.event_id == event.id))
+        session.execute(delete(PackingItem).where(PackingItem.event_id == event.id))
         session.commit()
 
         # Add new packing items

@@ -137,11 +137,11 @@ class EventCreate(EventBase):
 
 
 # Properties to receive on event update
-class EventUpdate(EventBase):
-    name: str | None = Field(default=None, max_length=255)  # type: ignore
-    description: str | None = Field(default=None, max_length=1000)
-    start_date: str | None = Field(default=None, max_length=10)
-    end_date: str | None = Field(default=None, max_length=10)
+class EventUpdate(SQLModel):
+    name: str | None = Field(default=None)
+    description: str | None = Field(default=None)
+    start_date: str | None = Field(default=None)
+    end_date: str | None = Field(default=None)
     packing_items: list[PackingItemInCreate] | None = None
 
 

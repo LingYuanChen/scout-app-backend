@@ -122,7 +122,7 @@ def get_event_packing_items(
         .offset(skip)
         .limit(limit)
     )
-    items = session.exec(statement).all()
+    items = list(session.exec(statement).all())
     count = session.exec(
         select(func.count())
         .select_from(PackingItem)
@@ -140,7 +140,7 @@ def get_event_attendees(
         .offset(skip)
         .limit(limit)
     )
-    attendees = session.exec(statement).all()
+    attendees = list(session.exec(statement).all())
     count = session.exec(
         select(func.count())
         .select_from(Attendance)

@@ -67,7 +67,7 @@ def get_my_events(
         .offset(skip)
         .limit(limit)
     )
-    event_ids = session.exec(statement).all()
+    event_ids = list(session.exec(statement).all())
     # Then get those events
     if event_ids:
         events = session.exec(select(Event).where(Event.id.in_(event_ids))).all()

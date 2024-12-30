@@ -8,6 +8,7 @@ from app import crud
 from app.api.deps import CurrentUser, EventDep, SessionDep
 from app.models import (
     Attendance,
+    Event,
     Item,
     ItemCreate,
     ItemPublic,
@@ -169,7 +170,7 @@ def list_packing_items(
     """
     List all packing items for an event.
     """
-    event = crud.get_event(session=session, id=event_id)
+    event = session.get(Event, event_id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
 

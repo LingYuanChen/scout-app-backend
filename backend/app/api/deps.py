@@ -90,7 +90,7 @@ def get_user_attendances(
     statement = select(Attendance).where(
         Attendance.user_id == current_user.id, Attendance.is_attending is True
     )
-    return session.exec(statement).all()
+    return list(session.exec(statement).all())
 
 
 UserAttendancesDep = Annotated[list[Attendance], Depends(get_user_attendances)]
