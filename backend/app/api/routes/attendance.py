@@ -71,7 +71,7 @@ def get_my_events(
     event_ids = session.exec(statement).all()
     # Then get those events
     if event_ids:
-        events = list(session.exec(select(Event).where(Event.id.in_(event_ids))).all())
+        events = list(session.exec(select(Event).where(Event.id.in_(event_ids))).all())  # type: ignore[attr-defined]
         return events
     return []
 

@@ -2,7 +2,7 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
-from sqlmodel import delete, func, select
+from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
 from app.models import (
@@ -101,6 +101,7 @@ def update_event(
     """
     Update an event and its packing items.
     """
+    # Check event exists and permissions
     event = session.get(Event, id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
@@ -110,23 +111,22 @@ def update_event(
     # Update event basic info
     update_dict = event_in.model_dump(exclude_unset=True, exclude={"packing_items"})
     event.sqlmodel_update(update_dict)
+    session.add(event)
 
     # Update packing items if provided
     if event_in.packing_items is not None:
-        # Delete existing packing items using a separate query
-        session.execute(delete(PackingItem).where(PackingItem.event_id == event.id))
-        session.commit()
-
-        # Add new packing items
+        # First verify all items exist
         for item_data in event_in.packing_items:
-            # Verify item exists
-            item = session.get(Item, item_data.item_id)
-            if not item:
+            if not session.get(Item, item_data.item_id):
                 raise HTTPException(
                     status_code=404,
                     detail=f"Item with id {item_data.item_id} not found",
                 )
 
+        session.query(PackingItem).filter(PackingItem.event_id == event.id).delete()  # type: ignore[arg-type]
+
+        # Add new packing items
+        for item_data in event_in.packing_items:
             packing_item = PackingItem(
                 event_id=event.id,
                 item_id=item_data.item_id,
