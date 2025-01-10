@@ -96,7 +96,7 @@ def update_item(
     ):
         raise HTTPException(
             status_code=403,
-            detail="Only the teacher who created this item can update it",
+            detail="Not enough permissions",
         )
 
     update_dict = item_in.model_dump(exclude_unset=True)
@@ -124,7 +124,7 @@ def delete_item(
     ):
         raise HTTPException(
             status_code=403,
-            detail="Only the teacher who created this item can delete it",
+            detail="Not enough permissions",
         )
 
     session.delete(item)

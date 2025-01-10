@@ -43,28 +43,28 @@ def test_use_access_token(
 
 
 def test_recovery_password(
-    client: TestClient, normal_user_token_headers: dict[str, str]
+    client: TestClient, student_token_headers: dict[str, str]
 ) -> None:
     with (
         patch("app.core.config.settings.SMTP_HOST", "smtp.example.com"),
         patch("app.core.config.settings.SMTP_USER", "admin@example.com"),
     ):
-        email = "test@example.com"
+        email = "test_student@example.com"
         r = client.post(
             f"{settings.API_V1_STR}/password-recovery/{email}",
-            headers=normal_user_token_headers,
+            headers=student_token_headers,
         )
         assert r.status_code == 200
         assert r.json() == {"message": "Password recovery email sent"}
 
 
 def test_recovery_password_user_not_exits(
-    client: TestClient, normal_user_token_headers: dict[str, str]
+    client: TestClient, student_token_headers: dict[str, str]
 ) -> None:
     email = "jVgQr@example.com"
     r = client.post(
         f"{settings.API_V1_STR}/password-recovery/{email}",
-        headers=normal_user_token_headers,
+        headers=student_token_headers,
     )
     assert r.status_code == 404
 

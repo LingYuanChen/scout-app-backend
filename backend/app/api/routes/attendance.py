@@ -5,7 +5,7 @@ from sqlmodel import select
 
 import app.crud as crud
 from app.api.deps import AttendanceDep, CurrentUser, EventDep, SessionDep
-from app.models import Attendance, Event, Message, PackingItemsPublic
+from app.models import Attendance, Event, EventPackingList, Message, PackingItemsPublic
 
 router = APIRouter(prefix="/attendance", tags=["attendance"])
 
@@ -100,7 +100,7 @@ def get_event_packing_list(
     return PackingItemsPublic(data=items, count=count)
 
 
-@router.get("/my-packing-lists", response_model=list[PackingItemsPublic])
+@router.get("/my-packing-lists", response_model=list[EventPackingList])
 def get_my_packing_lists(
     session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
 ) -> Any:
@@ -111,7 +111,7 @@ def get_my_packing_lists(
     attended_events_statement = (
         select(Event)
         .join(Attendance)
-        .where(Attendance.user_id == current_user.id, Attendance.is_attending is True)
+        .where(Attendance.user_id == current_user.id, Attendance.is_attending)
         .offset(skip)
         .limit(limit)
     )
@@ -125,11 +125,10 @@ def get_my_packing_lists(
             session=session, event_id=event.id, skip=0, limit=100
         )
         packing_lists.append(
-            PackingItemsPublic(
-                data=items,
-                count=count,
-                event_name=event.name,  # Adding event name for reference
-                event_id=event.id,  # Adding event ID for reference
+            EventPackingList(
+                event_id=event.id,
+                event_name=event.name,
+                items=PackingItemsPublic(data=items, count=count),
             )
         )
 

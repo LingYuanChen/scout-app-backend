@@ -2,17 +2,20 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
-from sqlmodel import func, select
+from sqlmodel import delete, func, select
 
 from app.api.deps import CurrentUser, SessionDep
 from app.models import (
     Event,
     EventCreate,
+    EventMealOption,
     EventPublic,
     EventsPublic,
     EventUpdate,
     Item,
+    Meal,
     PackingItem,
+    User,
 )
 
 router = APIRouter(prefix="/events", tags=["events"])
@@ -38,11 +41,14 @@ def read_event(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) ->
     """
     Get event by ID.
     """
+    user = session.get(User, current_user.id)
     event = session.get(Event, id)
+    if not user:
+        raise HTTPException(
+            status_code=403, detail="You are not authorized to view this event"
+        )
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
-    if not current_user.is_superuser and (event.created_by_id != current_user.id):
-        raise HTTPException(status_code=400, detail="Not enough permissions")
     return event
 
 
@@ -51,15 +57,15 @@ def create_event(
     *, session: SessionDep, current_user: CurrentUser, event_in: EventCreate
 ) -> Any:
     """
-    Create new event with packing items.
+    Create new event with packing items and meal options.
     Only teachers and superusers can create events.
     """
-    if not current_user.is_superuser and current_user.role != "teacher":
+    if current_user.role != "superuser" and current_user.role != "teacher":
         raise HTTPException(status_code=403, detail="Only teachers can create events")
 
     # Create event
     event = Event.model_validate(
-        event_in.model_dump(exclude={"packing_items"}),
+        event_in.model_dump(exclude={"packing_items", "meal_options"}),
         update={"created_by_id": current_user.id},
     )
     session.add(event)
@@ -87,6 +93,23 @@ def create_event(
             session.add(packing_item)
         session.commit()
         session.refresh(event)
+
+    # Add meal options if provided
+    if event_in.meal_options:
+        for meal_option in event_in.meal_options:
+            # Verify meal exists
+            meal = session.get(Meal, meal_option.meal_id)
+            if not meal:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Meal with id {meal_option.meal_id} not found",
+                )
+            # Create event meal option
+            event_meal = EventMealOption(event_id=event.id, **meal_option.model_dump())
+            session.add(event_meal)
+        session.commit()
+        session.refresh(event)
+
     return event
 
 
@@ -105,8 +128,8 @@ def update_event(
     event = session.get(Event, id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
-    if not current_user.is_superuser and (event.created_by_id != current_user.id):
-        raise HTTPException(status_code=400, detail="Not enough permissions")
+    if current_user.role != "superuser" and current_user.role != "teacher":
+        raise HTTPException(status_code=403, detail="Only teachers can update events")
 
     # Update event basic info
     update_dict = event_in.model_dump(exclude_unset=True, exclude={"packing_items"})
@@ -123,8 +146,8 @@ def update_event(
                     detail=f"Item with id {item_data.item_id} not found",
                 )
 
-        session.query(PackingItem).filter(PackingItem.event_id == event.id).delete()  # type: ignore[arg-type]
-
+        statement = delete(PackingItem).where(PackingItem.event_id == event.id)  # type: ignore
+        session.exec(statement)  # type: ignore
         # Add new packing items
         for item_data in event_in.packing_items:
             packing_item = PackingItem(
@@ -154,8 +177,8 @@ def delete_event(
     event = session.get(Event, id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
-    if not current_user.is_superuser and (event.created_by_id != current_user.id):
-        raise HTTPException(status_code=400, detail="Not enough permissions")
+    if current_user.role != "superuser" and current_user.role != "teacher":
+        raise HTTPException(status_code=403, detail="Only teachers can delete events")
 
     # No need to manually delete packing items
     # They will be automatically deleted due to cascade_delete=True
