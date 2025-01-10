@@ -51,7 +51,6 @@ SENTRY_DSN=""                             # Sentry DSN for error tracking
 
 1. **Start all services**
 ```bash
-# Start with hot reload
 docker compose watch
 ```
 
@@ -104,7 +103,7 @@ alembic upgrade head
 ```bash
 # Create test file for your new API
 cd tests/api/routes/
-touch test_new_model.py  # For Unix/Linux
+touch test_new_model.py  # For Unix/Linux/mac
 ```
 
 4. **Run tests before committing**
