@@ -53,12 +53,12 @@ def test_read_item_not_found(
 
 
 def test_read_item_not_enough_permissions(
-    client: TestClient, normal_user_token_headers: dict[str, str], db: Session
+    client: TestClient, student_token_headers: dict[str, str], db: Session
 ) -> None:
     item = create_random_item(db)
     response = client.get(
         f"{settings.API_V1_STR}/items/{item.id}",
-        headers=normal_user_token_headers,
+        headers=student_token_headers,
     )
     assert response.status_code == 400
     content = response.json()
@@ -112,16 +112,16 @@ def test_update_item_not_found(
 
 
 def test_update_item_not_enough_permissions(
-    client: TestClient, normal_user_token_headers: dict[str, str], db: Session
+    client: TestClient, student_token_headers: dict[str, str], db: Session
 ) -> None:
     item = create_random_item(db)
     data = {"title": "Updated title", "description": "Updated description"}
     response = client.put(
         f"{settings.API_V1_STR}/items/{item.id}",
-        headers=normal_user_token_headers,
+        headers=student_token_headers,
         json=data,
     )
-    assert response.status_code == 400
+    assert response.status_code == 403
     content = response.json()
     assert content["detail"] == "Not enough permissions"
 
@@ -152,13 +152,13 @@ def test_delete_item_not_found(
 
 
 def test_delete_item_not_enough_permissions(
-    client: TestClient, normal_user_token_headers: dict[str, str], db: Session
+    client: TestClient, student_token_headers: dict[str, str], db: Session
 ) -> None:
     item = create_random_item(db)
     response = client.delete(
         f"{settings.API_V1_STR}/items/{item.id}",
-        headers=normal_user_token_headers,
+        headers=student_token_headers,
     )
-    assert response.status_code == 400
+    assert response.status_code == 403
     content = response.json()
     assert content["detail"] == "Not enough permissions"

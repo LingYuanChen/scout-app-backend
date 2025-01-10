@@ -1,7 +1,19 @@
 import uuid
+from datetime import datetime
+from enum import Enum
+from uuid import UUID
 
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
+
+
+# Enums
+class MealType(str, Enum):
+    BREAKFAST = "breakfast"
+    LUNCH = "lunch"
+    DINNER = "dinner"
+    SNACK = "snack"
+    LATE_NIGHT = "late_night"
 
 
 # Shared properties
@@ -10,6 +22,7 @@ class UserBase(SQLModel):
     is_active: bool = True
     is_superuser: bool = False
     full_name: str | None = Field(default=None, max_length=255)
+    role: str = Field(default="student")  # "superuser", "teacher", "student"
 
 
 # Properties to receive via API on creation
@@ -41,14 +54,16 @@ class UpdatePassword(SQLModel):
 
 # Database model, database table inferred from class name
 class User(UserBase, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    id: UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
     items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
+    attendances: list["Attendance"] = Relationship(back_populates="user")
+    created_events: list["Event"] = Relationship(back_populates="created_by")
 
 
 # Properties to return via API, id is always required
 class UserPublic(UserBase):
-    id: uuid.UUID
+    id: UUID
 
 
 class UsersPublic(SQLModel):
@@ -56,10 +71,10 @@ class UsersPublic(SQLModel):
     count: int
 
 
-# Shared properties
 class ItemBase(SQLModel):
     title: str = Field(min_length=1, max_length=255)
     description: str | None = Field(default=None, max_length=255)
+    category: str | None = Field(default=None, max_length=100)
 
 
 # Properties to receive on item creation
@@ -74,18 +89,16 @@ class ItemUpdate(ItemBase):
 
 # Database model, database table inferred from class name
 class Item(ItemBase, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    title: str = Field(max_length=255)
-    owner_id: uuid.UUID = Field(
-        foreign_key="user.id", nullable=False, ondelete="CASCADE"
-    )
-    owner: User | None = Relationship(back_populates="items")
+    id: UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    owner_id: UUID = Field(foreign_key="user.id")
+    owner: User = Relationship(back_populates="items")
+    event_items: list["PackingItem"] = Relationship(back_populates="item")
 
 
 # Properties to return via API, id is always required
 class ItemPublic(ItemBase):
-    id: uuid.UUID
-    owner_id: uuid.UUID
+    id: UUID
+    owner_id: UUID
 
 
 class ItemsPublic(SQLModel):
@@ -112,3 +125,183 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=40)
+
+
+# Packing item models
+class PackingItemBase(SQLModel):
+    quantity: int = Field(default=1)
+    required: bool = Field(default=True)
+    notes: str | None = Field(default=None, max_length=255)
+
+
+class PackingItemCreate(PackingItemBase):
+    item_id: UUID
+
+
+class PackingItemUpdate(SQLModel):
+    quantity: int | None = None
+    required: bool | None = None
+
+
+class PackingItemPublic(PackingItemBase):
+    item: ItemPublic
+
+
+# Meal-related models
+class MealBase(SQLModel):
+    name: str
+    description: str | None = None
+    price: float | None = None
+    is_vegetarian: bool = False
+    is_beef: bool = False
+    calories: int | None = None
+
+
+class MealCreate(MealBase):
+    pass
+
+
+class MealUpdate(SQLModel):
+    name: str | None = None
+    description: str | None = None
+    price: float | None = None
+    is_vegetarian: bool | None = None
+    is_beef: bool | None = None
+    calories: int | None = None
+
+
+class MealPublic(MealBase):
+    id: UUID
+    created_at: datetime
+    created_by_id: UUID
+
+
+class EventMealOptionCreateBase(SQLModel):
+    meal_id: UUID = Field(foreign_key="meal.id")
+    meal_type: MealType
+    day: int
+    max_quantity: int | None = None
+
+
+# Event Meal Option models
+class EventMealOptionCreate(EventMealOptionCreateBase):
+    pass
+
+
+# Event-related models
+class EventBase(SQLModel):
+    name: str = Field(max_length=255)
+    description: str | None = Field(default=None, max_length=1000)
+    start_date: str = Field(max_length=10)  # Format: YYYY-MM-DD
+    end_date: str = Field(max_length=10)
+
+
+class EventCreate(EventBase):
+    packing_items: list[PackingItemCreate] | None = None
+    meal_options: list[EventMealOptionCreate] | None = None
+
+
+class EventUpdate(SQLModel):
+    name: str | None = Field(default=None)
+    description: str | None = Field(default=None)
+    start_date: str | None = Field(default=None)
+    end_date: str | None = Field(default=None)
+    packing_items: list[PackingItemCreate] | None = None
+
+
+class EventPublic(EventBase):
+    id: UUID
+    created_by_id: UUID
+    packing_items: list[PackingItemPublic]
+
+
+class EventsPublic(SQLModel):
+    data: list[EventPublic]
+    count: int
+
+
+# Database models (tables)
+class Event(EventBase, table=True):
+    id: UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    created_by_id: UUID = Field(foreign_key="user.id", nullable=False)
+    created_by: User = Relationship(back_populates="created_events")
+    attendees: list["Attendance"] = Relationship(
+        back_populates="event", cascade_delete=True
+    )
+    packing_items: list["PackingItem"] = Relationship(
+        back_populates="event", cascade_delete=True
+    )
+    meal_options: list["EventMealOption"] = Relationship(
+        back_populates="event", cascade_delete=True
+    )
+
+
+class Meal(MealBase, table=True):
+    id: UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    created_by_id: UUID = Field(foreign_key="user.id")
+    event_meal_options: list["EventMealOption"] = Relationship(back_populates="meal")
+    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+
+
+class EventMealOption(EventMealOptionCreateBase, table=True):
+    id: UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    event_id: UUID = Field(foreign_key="event.id")
+    event: Event = Relationship(back_populates="meal_options")
+    meal: Meal = Relationship(back_populates="event_meal_options")
+    meal_choices: list["MealChoice"] = Relationship(back_populates="event_meal_option")
+
+
+class PackingItem(PackingItemBase, table=True):
+    id: UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    event_id: UUID = Field(foreign_key="event.id")
+    item_id: UUID = Field(foreign_key="item.id")
+    event: Event = Relationship(back_populates="packing_items")
+    item: Item = Relationship(back_populates="event_items")
+
+
+class PackingItemsPublic(SQLModel):
+    data: list[PackingItemPublic]
+    count: int
+
+
+class EventPackingList(SQLModel):
+    event_id: UUID
+    event_name: str
+    items: PackingItemsPublic
+
+
+class MealChoiceCreateBase(SQLModel):
+    attendance_id: UUID = Field(foreign_key="attendance.id")
+    event_meal_option_id: UUID = Field(foreign_key="eventmealoption.id")
+    quantity: int = 1
+    notes: str | None = None
+
+
+class MealChoiceCreate(MealChoiceCreateBase):
+    pass
+
+
+class MealChoiceUpdate(SQLModel):
+    event_meal_option_id: UUID | None = None
+    quantity: int | None = None
+    notes: str | None = None
+
+
+class MealChoice(MealChoiceCreateBase, table=True):
+    id: UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    attendance: "Attendance" = Relationship(back_populates="meal_choices")
+    event_meal_option: EventMealOption = Relationship(back_populates="meal_choices")
+
+
+class Attendance(SQLModel, table=True):
+    id: UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: UUID = Field(foreign_key="user.id", nullable=False)
+    event_id: UUID = Field(foreign_key="event.id", nullable=False)
+    is_attending: bool = Field(default=True)
+
+    user: User = Relationship(back_populates="attendances")
+    event: Event = Relationship(back_populates="attendees")
+    meal_choices: list[MealChoice] = Relationship(back_populates="attendance")

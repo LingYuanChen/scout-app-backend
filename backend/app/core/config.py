@@ -92,7 +92,9 @@ class Settings(BaseSettings):
         return bool(self.SMTP_HOST and self.EMAILS_FROM_EMAIL)
 
     # TODO: update type to EmailStr when sqlmodel supports it
-    EMAIL_TEST_USER: str = "test@example.com"
+    EMAIL_TEST_TEACHER: str = "test_teacher@example.com"
+    # TODO: update type to EmailStr when sqlmodel supports it
+    EMAIL_TEST_STUDENT: str = "test_student@example.com"
     # TODO: update type to EmailStr when sqlmodel supports it
     FIRST_SUPERUSER: str
     FIRST_SUPERUSER_PASSWORD: str

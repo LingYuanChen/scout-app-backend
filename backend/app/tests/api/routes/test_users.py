@@ -22,15 +22,26 @@ def test_get_users_superuser_me(
     assert current_user["email"] == settings.FIRST_SUPERUSER
 
 
-def test_get_users_normal_user_me(
-    client: TestClient, normal_user_token_headers: dict[str, str]
+def test_get_users_teacher_user_me(
+    client: TestClient, teacher_token_headers: dict[str, str]
 ) -> None:
-    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=teacher_token_headers)
     current_user = r.json()
     assert current_user
     assert current_user["is_active"] is True
     assert current_user["is_superuser"] is False
-    assert current_user["email"] == settings.EMAIL_TEST_USER
+    assert current_user["email"] == settings.EMAIL_TEST_TEACHER
+
+
+def test_get_users_student_user_me(
+    client: TestClient, student_token_headers: dict[str, str]
+) -> None:
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=student_token_headers)
+    current_user = r.json()
+    assert current_user
+    assert current_user["is_active"] is True
+    assert current_user["is_superuser"] is False
+    assert current_user["email"] == settings.EMAIL_TEST_STUDENT
 
 
 def test_create_user_new_email(
@@ -103,11 +114,11 @@ def test_get_existing_user_current_user(client: TestClient, db: Session) -> None
 
 
 def test_get_existing_user_permissions_error(
-    client: TestClient, normal_user_token_headers: dict[str, str]
+    client: TestClient, student_token_headers: dict[str, str]
 ) -> None:
     r = client.get(
         f"{settings.API_V1_STR}/users/{uuid.uuid4()}",
-        headers=normal_user_token_headers,
+        headers=student_token_headers,
     )
     assert r.status_code == 403
     assert r.json() == {"detail": "The user doesn't have enough privileges"}
@@ -133,14 +144,14 @@ def test_create_user_existing_username(
 
 
 def test_create_user_by_normal_user(
-    client: TestClient, normal_user_token_headers: dict[str, str]
+    client: TestClient, student_token_headers: dict[str, str]
 ) -> None:
     username = random_email()
     password = random_lower_string()
     data = {"email": username, "password": password}
     r = client.post(
         f"{settings.API_V1_STR}/users/",
-        headers=normal_user_token_headers,
+        headers=student_token_headers,
         json=data,
     )
     assert r.status_code == 403
@@ -169,14 +180,14 @@ def test_retrieve_users(
 
 
 def test_update_user_me(
-    client: TestClient, normal_user_token_headers: dict[str, str], db: Session
+    client: TestClient, student_token_headers: dict[str, str], db: Session
 ) -> None:
     full_name = "Updated Name"
     email = random_email()
     data = {"full_name": full_name, "email": email}
     r = client.patch(
         f"{settings.API_V1_STR}/users/me",
-        headers=normal_user_token_headers,
+        headers=student_token_headers,
         json=data,
     )
     assert r.status_code == 200
@@ -246,7 +257,7 @@ def test_update_password_me_incorrect_password(
 
 
 def test_update_user_me_email_exists(
-    client: TestClient, normal_user_token_headers: dict[str, str], db: Session
+    client: TestClient, student_token_headers: dict[str, str], db: Session
 ) -> None:
     username = random_email()
     password = random_lower_string()
@@ -256,7 +267,7 @@ def test_update_user_me_email_exists(
     data = {"email": user.email}
     r = client.patch(
         f"{settings.API_V1_STR}/users/me",
-        headers=normal_user_token_headers,
+        headers=student_token_headers,
         json=data,
     )
     assert r.status_code == 409
@@ -471,7 +482,7 @@ def test_delete_user_current_super_user_error(
 
 
 def test_delete_user_without_privileges(
-    client: TestClient, normal_user_token_headers: dict[str, str], db: Session
+    client: TestClient, student_token_headers: dict[str, str], db: Session
 ) -> None:
     username = random_email()
     password = random_lower_string()
@@ -480,7 +491,7 @@ def test_delete_user_without_privileges(
 
     r = client.delete(
         f"{settings.API_V1_STR}/users/{user.id}",
-        headers=normal_user_token_headers,
+        headers=student_token_headers,
     )
     assert r.status_code == 403
     assert r.json()["detail"] == "The user doesn't have enough privileges"
