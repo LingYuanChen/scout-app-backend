@@ -15,8 +15,8 @@ A modern full-stack web application using FastAPI and React, with comprehensive 
 
 1. **Clone the repository**
 ```bash
-git clone <your-repo-url>
-cd <project-directory>
+git clone https://github.com/LingYuanChen/scout-app-backend.git
+cd scout-app-backend
 ```
 
 2. **Configure Environment Variables**
