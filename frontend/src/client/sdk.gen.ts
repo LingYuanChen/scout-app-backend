@@ -4,6 +4,26 @@ import type { CancelablePromise } from "./core/CancelablePromise"
 import { OpenAPI } from "./core/OpenAPI"
 import { request as __request } from "./core/request"
 import type {
+  AttendanceJoinEventData,
+  AttendanceJoinEventResponse,
+  AttendanceLeaveEventData,
+  AttendanceLeaveEventResponse,
+  AttendanceGetMyEventsData,
+  AttendanceGetMyEventsResponse,
+  AttendanceGetEventPackingListData,
+  AttendanceGetEventPackingListResponse,
+  AttendanceGetMyPackingListsData,
+  AttendanceGetMyPackingListsResponse,
+  EventsReadEventsData,
+  EventsReadEventsResponse,
+  EventsCreateEventData,
+  EventsCreateEventResponse,
+  EventsReadEventData,
+  EventsReadEventResponse,
+  EventsUpdateEventData,
+  EventsUpdateEventResponse,
+  EventsDeleteEventData,
+  EventsDeleteEventResponse,
   ItemsReadItemsData,
   ItemsReadItemsResponse,
   ItemsCreateItemData,
@@ -14,6 +34,12 @@ import type {
   ItemsUpdateItemResponse,
   ItemsDeleteItemData,
   ItemsDeleteItemResponse,
+  ItemsAddPackingItemData,
+  ItemsAddPackingItemResponse,
+  ItemsListPackingItemsData,
+  ItemsListPackingItemsResponse,
+  ItemsGetEventItemsData,
+  ItemsGetEventItemsResponse,
   LoginLoginAccessTokenData,
   LoginLoginAccessTokenResponse,
   LoginTestTokenResponse,
@@ -23,6 +49,24 @@ import type {
   LoginResetPasswordResponse,
   LoginRecoverPasswordHtmlContentData,
   LoginRecoverPasswordHtmlContentResponse,
+  MealChoicesCreateMealChoiceData,
+  MealChoicesCreateMealChoiceResponse,
+  MealChoicesReadMealChoicesData,
+  MealChoicesReadMealChoicesResponse,
+  MealChoicesUpdateMealChoiceData,
+  MealChoicesUpdateMealChoiceResponse,
+  MealChoicesDeleteMealChoiceData,
+  MealChoicesDeleteMealChoiceResponse,
+  MealsCreateMealData,
+  MealsCreateMealResponse,
+  MealsReadMealsData,
+  MealsReadMealsResponse,
+  MealsReadMealData,
+  MealsReadMealResponse,
+  MealsUpdateMealData,
+  MealsUpdateMealResponse,
+  MealsDeleteMealData,
+  MealsDeleteMealResponse,
   UsersReadUsersData,
   UsersReadUsersResponse,
   UsersCreateUserData,
@@ -46,10 +90,260 @@ import type {
   UtilsHealthCheckResponse,
 } from "./types.gen"
 
+export class AttendanceService {
+  /**
+   * Join Event
+   * Student joins an event
+   * @param data The data for the request.
+   * @param data.eventId
+   * @returns Message Successful Response
+   * @throws ApiError
+   */
+  public static joinEvent(
+    data: AttendanceJoinEventData,
+  ): CancelablePromise<AttendanceJoinEventResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/v1/attendance/{event_id}/join",
+      path: {
+        event_id: data.eventId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Leave Event
+   * Student leaves an event by removing the attendance record
+   * @param data The data for the request.
+   * @param data.eventId
+   * @returns Message Successful Response
+   * @throws ApiError
+   */
+  public static leaveEvent(
+    data: AttendanceLeaveEventData,
+  ): CancelablePromise<AttendanceLeaveEventResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/v1/attendance/{event_id}/leave",
+      path: {
+        event_id: data.eventId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Get My Events
+   * Get all events the student is attending
+   * @param data The data for the request.
+   * @param data.skip
+   * @param data.limit
+   * @returns unknown Successful Response
+   * @throws ApiError
+   */
+  public static getMyEvents(
+    data: AttendanceGetMyEventsData = {},
+  ): CancelablePromise<AttendanceGetMyEventsResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/attendance/my-events",
+      query: {
+        skip: data.skip,
+        limit: data.limit,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Get Event Packing List
+   * Get packing list for an event I'm attending
+   * @param data The data for the request.
+   * @param data.eventId
+   * @param data.skip
+   * @param data.limit
+   * @returns PackingItemsPublic Successful Response
+   * @throws ApiError
+   */
+  public static getEventPackingList(
+    data: AttendanceGetEventPackingListData,
+  ): CancelablePromise<AttendanceGetEventPackingListResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/attendance/{event_id}/packing-list",
+      path: {
+        event_id: data.eventId,
+      },
+      query: {
+        skip: data.skip,
+        limit: data.limit,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Get My Packing Lists
+   * Get packing lists for all events the student is attending
+   * @param data The data for the request.
+   * @param data.skip
+   * @param data.limit
+   * @returns EventPackingList Successful Response
+   * @throws ApiError
+   */
+  public static getMyPackingLists(
+    data: AttendanceGetMyPackingListsData = {},
+  ): CancelablePromise<AttendanceGetMyPackingListsResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/attendance/my-packing-lists",
+      query: {
+        skip: data.skip,
+        limit: data.limit,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+}
+
+export class EventsService {
+  /**
+   * Read Events
+   * Retrieve events.
+   * @param data The data for the request.
+   * @param data.skip
+   * @param data.limit
+   * @returns EventsPublic Successful Response
+   * @throws ApiError
+   */
+  public static readEvents(
+    data: EventsReadEventsData = {},
+  ): CancelablePromise<EventsReadEventsResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/events/",
+      query: {
+        skip: data.skip,
+        limit: data.limit,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Create Event
+   * Create new event with packing items and meal options.
+   * Only teachers and superusers can create events.
+   * @param data The data for the request.
+   * @param data.requestBody
+   * @returns EventPublic Successful Response
+   * @throws ApiError
+   */
+  public static createEvent(
+    data: EventsCreateEventData,
+  ): CancelablePromise<EventsCreateEventResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/v1/events/",
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Read Event
+   * Get event by ID.
+   * @param data The data for the request.
+   * @param data.id
+   * @returns EventPublic Successful Response
+   * @throws ApiError
+   */
+  public static readEvent(
+    data: EventsReadEventData,
+  ): CancelablePromise<EventsReadEventResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/events/{id}",
+      path: {
+        id: data.id,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Update Event
+   * Update an event and its packing items.
+   * @param data The data for the request.
+   * @param data.id
+   * @param data.requestBody
+   * @returns EventPublic Successful Response
+   * @throws ApiError
+   */
+  public static updateEvent(
+    data: EventsUpdateEventData,
+  ): CancelablePromise<EventsUpdateEventResponse> {
+    return __request(OpenAPI, {
+      method: "PUT",
+      url: "/api/v1/events/{id}",
+      path: {
+        id: data.id,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Delete Event
+   * Delete an event.
+   * @param data The data for the request.
+   * @param data.id
+   * @returns unknown Successful Response
+   * @throws ApiError
+   */
+  public static deleteEvent(
+    data: EventsDeleteEventData,
+  ): CancelablePromise<EventsDeleteEventResponse> {
+    return __request(OpenAPI, {
+      method: "DELETE",
+      url: "/api/v1/events/{id}",
+      path: {
+        id: data.id,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+}
+
 export class ItemsService {
   /**
    * Read Items
-   * Retrieve items.
+   * Retrieve items catalog.
+   * Only teachers and superusers can access this endpoint.
    * @param data The data for the request.
    * @param data.skip
    * @param data.limit
@@ -74,7 +368,8 @@ export class ItemsService {
 
   /**
    * Create Item
-   * Create new item.
+   * Create new item in catalog.
+   * Only teachers and superusers can create items.
    * @param data The data for the request.
    * @param data.requestBody
    * @returns ItemPublic Successful Response
@@ -120,6 +415,7 @@ export class ItemsService {
   /**
    * Update Item
    * Update an item.
+   * Only the teacher who created the item or superusers can update it.
    * @param data The data for the request.
    * @param data.id
    * @param data.requestBody
@@ -146,6 +442,7 @@ export class ItemsService {
   /**
    * Delete Item
    * Delete an item.
+   * Only the teacher who created the item or superusers can delete it.
    * @param data The data for the request.
    * @param data.id
    * @returns Message Successful Response
@@ -159,6 +456,91 @@ export class ItemsService {
       url: "/api/v1/items/{id}",
       path: {
         id: data.id,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Add Packing Item
+   * Add an item to event's packing list.
+   * @param data The data for the request.
+   * @param data.eventId
+   * @param data.requestBody
+   * @returns PackingItemPublic Successful Response
+   * @throws ApiError
+   */
+  public static addPackingItem(
+    data: ItemsAddPackingItemData,
+  ): CancelablePromise<ItemsAddPackingItemResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/v1/items/{event_id}/packing",
+      path: {
+        event_id: data.eventId,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * List Packing Items
+   * List all packing items for an event.
+   * @param data The data for the request.
+   * @param data.eventId
+   * @param data.skip
+   * @param data.limit
+   * @returns PackingItemsPublic Successful Response
+   * @throws ApiError
+   */
+  public static listPackingItems(
+    data: ItemsListPackingItemsData,
+  ): CancelablePromise<ItemsListPackingItemsResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/items/event/{event_id}/packing",
+      path: {
+        event_id: data.eventId,
+      },
+      query: {
+        skip: data.skip,
+        limit: data.limit,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Get Event Items
+   * Get all items required for an event.
+   * Students must be attending the event to see its packing list.
+   * @param data The data for the request.
+   * @param data.eventId
+   * @param data.skip
+   * @param data.limit
+   * @returns PackingItemsPublic Successful Response
+   * @throws ApiError
+   */
+  public static getEventItems(
+    data: ItemsGetEventItemsData,
+  ): CancelablePromise<ItemsGetEventItemsResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/items/event/{event_id}",
+      path: {
+        event_id: data.eventId,
+      },
+      query: {
+        skip: data.skip,
+        limit: data.limit,
       },
       errors: {
         422: "Validation Error",
@@ -264,6 +646,233 @@ export class LoginService {
       url: "/api/v1/password-recovery-html-content/{email}",
       path: {
         email: data.email,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+}
+
+export class MealChoicesService {
+  /**
+   * Create Meal Choice
+   * Create meal choice for an attendance.
+   * @param data The data for the request.
+   * @param data.requestBody
+   * @returns MealChoice Successful Response
+   * @throws ApiError
+   */
+  public static createMealChoice(
+    data: MealChoicesCreateMealChoiceData,
+  ): CancelablePromise<MealChoicesCreateMealChoiceResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/v1/meal-choices/",
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Read Meal Choices
+   * Get meal choices. Can filter by attendance_id.
+   * @param data The data for the request.
+   * @param data.attendanceId
+   * @returns MealChoice Successful Response
+   * @throws ApiError
+   */
+  public static readMealChoices(
+    data: MealChoicesReadMealChoicesData = {},
+  ): CancelablePromise<MealChoicesReadMealChoicesResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/meal-choices/",
+      query: {
+        attendance_id: data.attendanceId,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Update Meal Choice
+   * Update a meal choice.
+   * @param data The data for the request.
+   * @param data.id
+   * @param data.requestBody
+   * @returns MealChoice Successful Response
+   * @throws ApiError
+   */
+  public static updateMealChoice(
+    data: MealChoicesUpdateMealChoiceData,
+  ): CancelablePromise<MealChoicesUpdateMealChoiceResponse> {
+    return __request(OpenAPI, {
+      method: "PUT",
+      url: "/api/v1/meal-choices/{id}",
+      path: {
+        id: data.id,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Delete Meal Choice
+   * Delete a meal choice.
+   * @param data The data for the request.
+   * @param data.id
+   * @returns unknown Successful Response
+   * @throws ApiError
+   */
+  public static deleteMealChoice(
+    data: MealChoicesDeleteMealChoiceData,
+  ): CancelablePromise<MealChoicesDeleteMealChoiceResponse> {
+    return __request(OpenAPI, {
+      method: "DELETE",
+      url: "/api/v1/meal-choices/{id}",
+      path: {
+        id: data.id,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+}
+
+export class MealsService {
+  /**
+   * Create Meal
+   * Create new meal. Only teachers and superusers can create meals.
+   *
+   * Example request body:    ```json
+   * {
+   * "name": "Spaghetti Bolognese",
+   * "description": "Classic Italian pasta with meat sauce",
+   * "price": 15.00,
+   * "is_vegetarian": false,
+   * "is_beef": true,
+   * "calories": 650
+   * }    ```
+   * @param data The data for the request.
+   * @param data.requestBody
+   * @returns MealPublic Successful Response
+   * @throws ApiError
+   */
+  public static createMeal(
+    data: MealsCreateMealData,
+  ): CancelablePromise<MealsCreateMealResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/v1/meals/",
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Read Meals
+   * Retrieve meals.
+   * @param data The data for the request.
+   * @param data.skip
+   * @param data.limit
+   * @returns MealPublic Successful Response
+   * @throws ApiError
+   */
+  public static readMeals(
+    data: MealsReadMealsData = {},
+  ): CancelablePromise<MealsReadMealsResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/meals/",
+      query: {
+        skip: data.skip,
+        limit: data.limit,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Read Meal
+   * Get meal by ID.
+   * @param data The data for the request.
+   * @param data.id
+   * @returns MealPublic Successful Response
+   * @throws ApiError
+   */
+  public static readMeal(
+    data: MealsReadMealData,
+  ): CancelablePromise<MealsReadMealResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/meals/{id}",
+      path: {
+        id: data.id,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Update Meal
+   * Update a meal.
+   * @param data The data for the request.
+   * @param data.id
+   * @param data.requestBody
+   * @returns MealPublic Successful Response
+   * @throws ApiError
+   */
+  public static updateMeal(
+    data: MealsUpdateMealData,
+  ): CancelablePromise<MealsUpdateMealResponse> {
+    return __request(OpenAPI, {
+      method: "PUT",
+      url: "/api/v1/meals/{id}",
+      path: {
+        id: data.id,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Delete Meal
+   * Delete a meal.
+   * @param data The data for the request.
+   * @param data.id
+   * @returns unknown Successful Response
+   * @throws ApiError
+   */
+  public static deleteMeal(
+    data: MealsDeleteMealData,
+  ): CancelablePromise<MealsDeleteMealResponse> {
+    return __request(OpenAPI, {
+      method: "DELETE",
+      url: "/api/v1/meals/{id}",
+      path: {
+        id: data.id,
       },
       errors: {
         422: "Validation Error",

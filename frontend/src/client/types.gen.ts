@@ -9,6 +9,51 @@ export type Body_login_login_access_token = {
   client_secret?: string | null
 }
 
+export type EventCreate = {
+  name: string
+  description?: string | null
+  start_date: string
+  end_date: string
+  packing_items?: Array<PackingItemCreate> | null
+  meal_options?: Array<EventMealOptionCreate> | null
+}
+
+export type EventMealOptionCreate = {
+  meal_id: string
+  meal_type: MealType
+  day: number
+  max_quantity?: number | null
+}
+
+export type EventPackingList = {
+  event_id: string
+  event_name: string
+  items: PackingItemsPublic
+}
+
+export type EventPublic = {
+  name: string
+  description?: string | null
+  start_date: string
+  end_date: string
+  id: string
+  created_by_id: string
+  packing_items: Array<PackingItemPublic>
+}
+
+export type EventsPublic = {
+  data: Array<EventPublic>
+  count: number
+}
+
+export type EventUpdate = {
+  name?: string | null
+  description?: string | null
+  start_date?: string | null
+  end_date?: string | null
+  packing_items?: Array<PackingItemCreate> | null
+}
+
 export type HTTPValidationError = {
   detail?: Array<ValidationError>
 }
@@ -16,11 +61,13 @@ export type HTTPValidationError = {
 export type ItemCreate = {
   title: string
   description?: string | null
+  category?: string | null
 }
 
 export type ItemPublic = {
   title: string
   description?: string | null
+  category?: string | null
   id: string
   owner_id: string
 }
@@ -33,6 +80,62 @@ export type ItemsPublic = {
 export type ItemUpdate = {
   title?: string | null
   description?: string | null
+  category?: string | null
+}
+
+export type MealChoice = {
+  attendance_id: string
+  event_meal_option_id: string
+  quantity?: number
+  notes?: string | null
+  id?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export type MealChoiceCreate = {
+  attendance_id: string
+  event_meal_option_id: string
+  quantity?: number
+  notes?: string | null
+}
+
+export type MealChoiceUpdate = {
+  event_meal_option_id?: string | null
+  quantity?: number | null
+  notes?: string | null
+}
+
+export type MealCreate = {
+  name: string
+  description?: string | null
+  price?: number | null
+  is_vegetarian?: boolean
+  is_beef?: boolean
+  calories?: number | null
+}
+
+export type MealPublic = {
+  name: string
+  description?: string | null
+  price?: number | null
+  is_vegetarian?: boolean
+  is_beef?: boolean
+  calories?: number | null
+  id: string
+  created_at: string
+  created_by_id: string
+}
+
+export type MealType = "breakfast" | "lunch" | "dinner" | "snack" | "late_night"
+
+export type MealUpdate = {
+  name?: string | null
+  description?: string | null
+  price?: number | null
+  is_vegetarian?: boolean | null
+  is_beef?: boolean | null
+  calories?: number | null
 }
 
 export type Message = {
@@ -42,6 +145,25 @@ export type Message = {
 export type NewPassword = {
   token: string
   new_password: string
+}
+
+export type PackingItemCreate = {
+  quantity?: number
+  required?: boolean
+  notes?: string | null
+  item_id: string
+}
+
+export type PackingItemPublic = {
+  quantity?: number
+  required?: boolean
+  notes?: string | null
+  item: ItemPublic
+}
+
+export type PackingItemsPublic = {
+  data: Array<PackingItemPublic>
+  count: number
 }
 
 export type Token = {
@@ -59,6 +181,7 @@ export type UserCreate = {
   is_active?: boolean
   is_superuser?: boolean
   full_name?: string | null
+  role?: string
   password: string
 }
 
@@ -67,6 +190,7 @@ export type UserPublic = {
   is_active?: boolean
   is_superuser?: boolean
   full_name?: string | null
+  role?: string
   id: string
 }
 
@@ -86,6 +210,7 @@ export type UserUpdate = {
   is_active?: boolean
   is_superuser?: boolean
   full_name?: string | null
+  role?: string
   password?: string | null
 }
 
@@ -99,6 +224,72 @@ export type ValidationError = {
   msg: string
   type: string
 }
+
+export type AttendanceJoinEventData = {
+  eventId: string
+}
+
+export type AttendanceJoinEventResponse = Message
+
+export type AttendanceLeaveEventData = {
+  eventId: string
+}
+
+export type AttendanceLeaveEventResponse = Message
+
+export type AttendanceGetMyEventsData = {
+  limit?: number
+  skip?: number
+}
+
+export type AttendanceGetMyEventsResponse = unknown
+
+export type AttendanceGetEventPackingListData = {
+  eventId: string
+  limit?: number
+  skip?: number
+}
+
+export type AttendanceGetEventPackingListResponse = PackingItemsPublic
+
+export type AttendanceGetMyPackingListsData = {
+  limit?: number
+  skip?: number
+}
+
+export type AttendanceGetMyPackingListsResponse = Array<EventPackingList>
+
+export type EventsReadEventsData = {
+  limit?: number
+  skip?: number
+}
+
+export type EventsReadEventsResponse = EventsPublic
+
+export type EventsCreateEventData = {
+  requestBody: EventCreate
+}
+
+export type EventsCreateEventResponse = EventPublic
+
+export type EventsReadEventData = {
+  id: string
+}
+
+export type EventsReadEventResponse = EventPublic
+
+export type EventsUpdateEventData = {
+  id: string
+  requestBody: EventUpdate
+}
+
+export type EventsUpdateEventResponse = EventPublic
+
+export type EventsDeleteEventData = {
+  id: string
+}
+
+export type EventsDeleteEventResponse = unknown
 
 export type ItemsReadItemsData = {
   limit?: number
@@ -132,6 +323,29 @@ export type ItemsDeleteItemData = {
 
 export type ItemsDeleteItemResponse = Message
 
+export type ItemsAddPackingItemData = {
+  eventId: string
+  requestBody: PackingItemCreate
+}
+
+export type ItemsAddPackingItemResponse = PackingItemPublic
+
+export type ItemsListPackingItemsData = {
+  eventId: string
+  limit?: number
+  skip?: number
+}
+
+export type ItemsListPackingItemsResponse = PackingItemsPublic
+
+export type ItemsGetEventItemsData = {
+  eventId: string
+  limit?: number
+  skip?: number
+}
+
+export type ItemsGetEventItemsResponse = PackingItemsPublic
+
 export type LoginLoginAccessTokenData = {
   formData: Body_login_login_access_token
 }
@@ -157,6 +371,63 @@ export type LoginRecoverPasswordHtmlContentData = {
 }
 
 export type LoginRecoverPasswordHtmlContentResponse = string
+
+export type MealChoicesCreateMealChoiceData = {
+  requestBody: MealChoiceCreate
+}
+
+export type MealChoicesCreateMealChoiceResponse = MealChoice
+
+export type MealChoicesReadMealChoicesData = {
+  attendanceId?: string | null
+}
+
+export type MealChoicesReadMealChoicesResponse = Array<MealChoice>
+
+export type MealChoicesUpdateMealChoiceData = {
+  id: string
+  requestBody: MealChoiceUpdate
+}
+
+export type MealChoicesUpdateMealChoiceResponse = MealChoice
+
+export type MealChoicesDeleteMealChoiceData = {
+  id: string
+}
+
+export type MealChoicesDeleteMealChoiceResponse = unknown
+
+export type MealsCreateMealData = {
+  requestBody: MealCreate
+}
+
+export type MealsCreateMealResponse = MealPublic
+
+export type MealsReadMealsData = {
+  limit?: number
+  skip?: number
+}
+
+export type MealsReadMealsResponse = Array<MealPublic>
+
+export type MealsReadMealData = {
+  id: string
+}
+
+export type MealsReadMealResponse = MealPublic
+
+export type MealsUpdateMealData = {
+  id: string
+  requestBody: MealUpdate
+}
+
+export type MealsUpdateMealResponse = MealPublic
+
+export type MealsDeleteMealData = {
+  id: string
+}
+
+export type MealsDeleteMealResponse = unknown
 
 export type UsersReadUsersData = {
   limit?: number
