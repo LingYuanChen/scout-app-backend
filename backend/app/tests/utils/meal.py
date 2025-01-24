@@ -2,7 +2,7 @@ import uuid
 
 from sqlmodel import Session, delete
 
-from app.models import (
+from app.db import (
     Attendance,
     Event,
     EventMealOption,

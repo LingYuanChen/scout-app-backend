@@ -2,7 +2,7 @@ import uuid
 
 from sqlmodel import Session, delete
 
-from app.models import Attendance, Event, PackingItem
+from app.db import Attendance, Event, PackingItem
 from app.tests.utils.event import create_random_event
 from app.tests.utils.item import create_random_item
 from app.tests.utils.user import create_random_user

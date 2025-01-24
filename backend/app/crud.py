@@ -5,16 +5,18 @@ from sqlalchemy import func
 from sqlmodel import Session, select
 
 from app.core.security import get_password_hash, verify_password
-from app.models import (
+from app.db import (
     Attendance,
     Event,
+    Item,
+    PackingItem,
+    User,
+)
+from app.schemas import (
     EventCreate,
     EventUpdate,
-    Item,
     ItemCreate,
-    PackingItem,
     PackingItemCreate,
-    User,
     UserCreate,
     UserUpdate,
 )

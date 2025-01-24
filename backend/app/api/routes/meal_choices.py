@@ -5,10 +5,12 @@ from fastapi import APIRouter, HTTPException
 from sqlmodel import select
 
 from app.api.deps import CurrentUser, SessionDep
-from app.models import (
+from app.db import (
     Attendance,
     EventMealOption,
     MealChoice,
+)
+from app.schemas import (
     MealChoiceCreate,
     MealChoiceUpdate,
 )
