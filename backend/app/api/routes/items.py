@@ -1,21 +1,18 @@
-import uuid
 from typing import Any
+from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
 from sqlmodel import func, select
 
 from app import crud
 from app.api.deps import CurrentUser, EventDep, SessionDep
-from app.models import (
-    Attendance,
-    Event,
-    Item,
+from app.db import Attendance, Event, Item, PackingItem
+from app.schemas import (
     ItemCreate,
     ItemPublic,
     ItemsPublic,
     ItemUpdate,
     Message,
-    PackingItem,
     PackingItemCreate,
     PackingItemPublic,
     PackingItemsPublic,
@@ -45,7 +42,7 @@ def read_items(
 
 
 @router.get("/{id}", response_model=ItemPublic)
-def read_item(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> Any:
+def read_item(session: SessionDep, current_user: CurrentUser, id: UUID) -> Any:
     """
     Get item by ID.
     """
@@ -80,7 +77,7 @@ def update_item(
     *,
     session: SessionDep,
     current_user: CurrentUser,
-    id: uuid.UUID,
+    id: UUID,
     item_in: ItemUpdate,
 ) -> Any:
     """
@@ -108,9 +105,7 @@ def update_item(
 
 
 @router.delete("/{id}")
-def delete_item(
-    session: SessionDep, current_user: CurrentUser, id: uuid.UUID
-) -> Message:
+def delete_item(session: SessionDep, current_user: CurrentUser, id: UUID) -> Message:
     """
     Delete an item.
     Only the teacher who created the item or superusers can delete it.
@@ -163,7 +158,7 @@ def add_packing_item(
 def list_packing_items(
     *,
     session: SessionDep,
-    event_id: uuid.UUID,
+    event_id: UUID,
     skip: int = 0,
     limit: int = 100,
 ) -> Any:
@@ -186,7 +181,7 @@ def get_event_items(
     *,
     session: SessionDep,
     current_user: CurrentUser,
-    event_id: uuid.UUID,
+    event_id: UUID,
     skip: int = 0,
     limit: int = 100,
 ) -> Any:

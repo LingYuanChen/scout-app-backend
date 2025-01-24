@@ -5,7 +5,8 @@ from sqlmodel import Session
 
 from app import crud
 from app.core.config import settings
-from app.models import User, UserCreate, UserUpdate
+from app.db import User
+from app.schemas import UserCreate, UserUpdate
 from app.tests.utils.utils import random_email, random_lower_string
 
 # Define valid role types

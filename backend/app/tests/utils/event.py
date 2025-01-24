@@ -2,7 +2,7 @@ import uuid
 
 from sqlmodel import Session, select
 
-from app.models import Event, Item, PackingItem
+from app.db import Event, Item, PackingItem
 from app.tests.utils.item import create_random_item
 from app.tests.utils.user import (
     create_random_teacher,

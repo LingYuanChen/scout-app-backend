@@ -1,21 +1,23 @@
-import uuid
 from typing import Any
+from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
 from sqlmodel import delete, func, select
 
 from app.api.deps import CurrentUser, SessionDep
-from app.models import (
+from app.db import (
     Event,
-    EventCreate,
     EventMealOption,
-    EventPublic,
-    EventsPublic,
-    EventUpdate,
     Item,
     Meal,
     PackingItem,
     User,
+)
+from app.schemas import (
+    EventCreate,
+    EventPublic,
+    EventsPublic,
+    EventUpdate,
 )
 
 router = APIRouter(prefix="/events", tags=["events"])
@@ -37,7 +39,7 @@ def read_events(
 
 
 @router.get("/{id}", response_model=EventPublic)
-def read_event(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> Any:
+def read_event(session: SessionDep, current_user: CurrentUser, id: UUID) -> Any:
     """
     Get event by ID.
     """
@@ -118,7 +120,7 @@ def update_event(
     *,
     session: SessionDep,
     current_user: CurrentUser,
-    id: uuid.UUID,
+    id: UUID,
     event_in: EventUpdate,
 ) -> Any:
     """
@@ -169,7 +171,7 @@ def delete_event(
     *,
     session: SessionDep,
     current_user: CurrentUser,
-    id: uuid.UUID,
+    id: UUID,
 ) -> Any:
     """
     Delete an event.

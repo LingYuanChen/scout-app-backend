@@ -5,7 +5,12 @@ from fastapi import APIRouter, HTTPException
 from sqlmodel import select
 
 from app.api.deps import CurrentUser, SessionDep
-from app.models import Meal, MealCreate, MealPublic, MealUpdate
+from app.db import Meal
+from app.schemas import (
+    MealCreate,
+    MealPublic,
+    MealUpdate,
+)
 
 router = APIRouter(prefix="/meals", tags=["meals"])
 

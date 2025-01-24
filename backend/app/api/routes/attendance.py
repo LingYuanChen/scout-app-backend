@@ -5,7 +5,12 @@ from sqlmodel import select
 
 import app.crud as crud
 from app.api.deps import AttendanceDep, CurrentUser, EventDep, SessionDep
-from app.models import Attendance, Event, EventPackingList, Message, PackingItemsPublic
+from app.db import Attendance, Event
+from app.schemas import (
+    EventPackingList,
+    Message,
+    PackingItemsPublic,
+)
 
 router = APIRouter(prefix="/attendance", tags=["attendance"])
 
@@ -53,7 +58,6 @@ def leave_event(
     return Message(message="Successfully left the event")
 
 
-# @router.get("/my-events", response_model=list[uuid.UUID])
 @router.get("/my-events")
 def get_my_events(
     session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
