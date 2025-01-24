@@ -84,11 +84,11 @@ export type ItemUpdate = {
 }
 
 export type MealChoice = {
+  id?: string
   attendance_id: string
   event_meal_option_id: string
   quantity?: number
   notes?: string | null
-  id?: string
   created_at?: string
   updated_at?: string
 }
