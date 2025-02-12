@@ -4,8 +4,8 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session
 
 from app.core.config import settings
+from app.tests.utils.equipment import create_random_equipment
 from app.tests.utils.event import create_random_event
-from app.tests.utils.item import create_random_item
 from app.tests.utils.meal import create_random_meal
 
 
@@ -13,7 +13,7 @@ def test_create_event(
     client: TestClient, teacher_token_headers: dict[str, str], db: Session
 ) -> None:
     # Create a test item for packing list
-    item = create_random_item(db)
+    equipment = create_random_equipment(db)
     # Create a test meal
     meal = create_random_meal(db)
 
@@ -22,9 +22,9 @@ def test_create_event(
         "description": "Test Description",
         "start_date": "2024-07-01",
         "end_date": "2024-07-05",
-        "packing_items": [
+        "packing_equipments": [
             {
-                "item_id": str(item.id),
+                "equipment_id": str(equipment.id),
                 "quantity": 2,
                 "required": True,
                 "notes": "Important",
@@ -50,7 +50,7 @@ def test_create_event(
     assert content["description"] == data["description"]
     assert "id" in content
     assert "created_by_id" in content
-    assert len(content["packing_items"]) == 1
+    assert len(content["packing_equipments"]) == 1
 
 
 def test_create_event_by_student(
@@ -116,14 +116,16 @@ def test_update_event(
     client: TestClient, teacher_token_headers: dict[str, str], db: Session
 ) -> None:
     event = create_random_event(db)
-    item = create_random_item(db)
+    equipment = create_random_equipment(db)
 
     data = {
         "name": "Updated Event",
         "description": "Updated Description",
         "start_date": "2024-08-01",
         "end_date": "2024-08-05",
-        "packing_items": [{"item_id": str(item.id), "quantity": 1, "required": True}],
+        "packing_equipments": [
+            {"equipment_id": str(equipment.id), "quantity": 1, "required": True}
+        ],
     }
     response = client.put(
         f"{settings.API_V1_STR}/events/{event.id}",
@@ -134,7 +136,7 @@ def test_update_event(
     content = response.json()
     assert content["name"] == data["name"]
     assert content["description"] == data["description"]
-    assert len(content["packing_items"]) == 1
+    assert len(content["packing_equipments"]) == 1
 
 
 def test_delete_event(

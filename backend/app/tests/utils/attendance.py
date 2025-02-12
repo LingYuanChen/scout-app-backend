@@ -2,9 +2,9 @@ import uuid
 
 from sqlmodel import Session, delete
 
-from app.db import Attendance, Event, PackingItem
+from app.db import Attendance, Event, PackingEquipment
+from app.tests.utils.equipment import create_random_equipment
 from app.tests.utils.event import create_random_event
-from app.tests.utils.item import create_random_item
 from app.tests.utils.user import create_random_user
 
 
@@ -26,31 +26,31 @@ def create_random_attendance(
     return attendance
 
 
-def create_attendance_with_packing_items(
+def create_attendance_with_packing_equipments(
     db: Session,
     *,
     user_id: uuid.UUID | None = None,
-    num_items: int = 1,
+    num_equipments: int = 1,
 ) -> Attendance:
     """Create attendance with packing items for testing"""
     # 1. Creates attendance record in attendance table
     attendance = create_random_attendance(db, user_id=user_id)
 
-    # 2. For each item:
-    for _ in range(num_items):
-        # Creates item record in item table
-        item = create_random_item(db)
+    # 2. For each equipment:
+    for _ in range(num_equipments):
+        # Creates equipment record in equipment table
+        equipment = create_random_equipment(db)
 
-        # Creates packing_item record in packing_item table
-        # This links to both event and item via foreign keys
-        packing_item = PackingItem(
+        # Creates packing_equipment record in packing_equipment table
+        # This links to both event and equipment via foreign keys
+        packing_equipment = PackingEquipment(
             event_id=attendance.event_id,  # Foreign key to event
-            item_id=item.id,  # Foreign key to item
+            equipment_id=equipment.id,  # Foreign key to equipment
             quantity=2,
             required=True,
         )
-        # Adds to packing_item table
-        db.add(packing_item)
+        # Adds to packing_equipment table
+        db.add(packing_equipment)
 
     # 3. Commits all changes to database
     db.commit()
@@ -62,7 +62,7 @@ def clean_attendance_tables(db: Session) -> None:
     try:
         # Delete in correct order (children first)
         tables = [
-            PackingItem,  # Delete first (references Attendance)
+            PackingEquipment,  # Delete first (references Attendance)
             Attendance,  # Delete second (references Event)
             Event,  # Delete last
         ]

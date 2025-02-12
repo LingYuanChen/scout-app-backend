@@ -2,8 +2,8 @@ from fastapi import APIRouter
 
 from app.api.routes import (
     attendance,
+    equipments,
     events,
-    items,
     login,
     meal_choices,
     meals,
@@ -17,7 +17,7 @@ api_router = APIRouter()
 api_router.include_router(login.router)
 api_router.include_router(users.router)
 api_router.include_router(utils.router)
-api_router.include_router(items.router)
+api_router.include_router(equipments.router)
 api_router.include_router(events.router)
 api_router.include_router(attendance.router)
 api_router.include_router(meals.router)

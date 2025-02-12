@@ -23,20 +23,24 @@ class User(SQLModel, table=True):
     full_name: str | None = Field(default=None, max_length=255)
     role: str = Field(default="student")  # "superuser", "teacher", "student"
 
-    items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
+    equipments: list["Equipment"] = Relationship(
+        back_populates="owner", cascade_delete=True
+    )
     attendances: list["Attendance"] = Relationship(back_populates="user")
     created_events: list["Event"] = Relationship(back_populates="created_by")
 
 
-class Item(SQLModel, table=True):
+class Equipment(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     title: str = Field(min_length=1, max_length=255)
     description: str | None = Field(default=None, max_length=255)
     category: str | None = Field(default=None, max_length=100)
     owner_id: UUID = Field(foreign_key="user.id")
 
-    owner: User = Relationship(back_populates="items")
-    event_items: list["PackingItem"] = Relationship(back_populates="item")
+    owner: User = Relationship(back_populates="equipments")
+    event_equipments: list["PackingEquipment"] = Relationship(
+        back_populates="equipment"
+    )
 
 
 class Event(SQLModel, table=True):
@@ -51,7 +55,7 @@ class Event(SQLModel, table=True):
     attendees: list["Attendance"] = Relationship(
         back_populates="event", cascade_delete=True
     )
-    packing_items: list["PackingItem"] = Relationship(
+    packing_equipments: list["PackingEquipment"] = Relationship(
         back_populates="event", cascade_delete=True
     )
     meal_options: list["EventMealOption"] = Relationship(
@@ -86,16 +90,16 @@ class EventMealOption(SQLModel, table=True):
     meal_choices: list["MealChoice"] = Relationship(back_populates="event_meal_option")
 
 
-class PackingItem(SQLModel, table=True):
+class PackingEquipment(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     event_id: UUID = Field(foreign_key="event.id")
-    item_id: UUID = Field(foreign_key="item.id")
+    equipment_id: UUID = Field(foreign_key="equipment.id")
     quantity: int = Field(default=1)
     required: bool = Field(default=True)
     notes: str | None = Field(default=None, max_length=255)
 
-    event: Event = Relationship(back_populates="packing_items")
-    item: Item = Relationship(back_populates="event_items")
+    event: Event = Relationship(back_populates="packing_equipments")
+    equipment: Equipment = Relationship(back_populates="event_equipments")
 
 
 class MealChoice(SQLModel, table=True):
@@ -122,14 +126,23 @@ class Attendance(SQLModel, table=True):
     meal_choices: list[MealChoice] = Relationship(back_populates="attendance")
 
 
+class Course(SQLModel, table=True):
+    id: UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    name: str = Field(max_length=255)
+    description: str | None = Field(default=None, max_length=1000)
+    created_by_id: UUID = Field(foreign_key="user.id")
+    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+
+
 __all__ = [
     "User",
-    "Item",
+    "Equipment",
     "Event",
     "Meal",
     "EventMealOption",
-    "PackingItem",
+    "PackingEquipment",
     "MealChoice",
     "Attendance",
     "MealType",
+    "Course",
 ]

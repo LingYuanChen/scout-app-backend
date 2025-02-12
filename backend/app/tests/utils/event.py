@@ -2,8 +2,8 @@ import uuid
 
 from sqlmodel import Session, select
 
-from app.db import Event, Item, PackingItem
-from app.tests.utils.item import create_random_item
+from app.db import Equipment, Event, PackingEquipment
+from app.tests.utils.equipment import create_random_equipment
 from app.tests.utils.user import (
     create_random_teacher,
 )
@@ -11,7 +11,10 @@ from app.tests.utils.utils import random_lower_string
 
 
 def create_random_event(
-    db: Session, *, created_by_id: uuid.UUID | None = None, packing_items_count: int = 0
+    db: Session,
+    *,
+    created_by_id: uuid.UUID | None = None,
+    packing_equipment_count: int = 0,
 ) -> Event:
     """Create a random event with optional packing items.
 
@@ -37,28 +40,30 @@ def create_random_event(
     db.refresh(event)
 
     # Add packing items if requested
-    if packing_items_count > 0:
+    if packing_equipment_count > 0:
         # First try to get existing items
-        existing_items = list(db.exec(select(Item).limit(packing_items_count)).all())
+        existing_items = list(
+            db.exec(select(Equipment).limit(packing_equipment_count)).all()
+        )
 
         # Calculate how many new items we need to create
-        items_needed = packing_items_count - len(existing_items)
+        items_needed = packing_equipment_count - len(existing_items)
 
         # Create new items if necessary
         if items_needed > 0:
             for _ in range(items_needed):
-                existing_items.append(create_random_item(db))
+                existing_items.append(create_random_equipment(db))
 
         # Create packing items for the event
-        for item in existing_items[:packing_items_count]:
-            packing_item = PackingItem(
+        for equipment in existing_items[:packing_equipment_count]:
+            packing_equipment = PackingEquipment(
                 event_id=event.id,
-                item_id=item.id,
+                equipment_id=equipment.id,
                 quantity=2,  # Default quantity
                 required=True,  # Default required status
-                notes=f"Test note for {item.title}",
+                notes=f"Test note for {equipment.title}",
             )
-            db.add(packing_item)
+            db.add(packing_equipment)
 
         db.commit()
         db.refresh(event)

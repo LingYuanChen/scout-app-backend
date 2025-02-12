@@ -6,11 +6,11 @@ from sqlmodel import delete, func, select
 
 from app.api.deps import CurrentUser, SessionDep
 from app.db import (
+    Equipment,
     Event,
     EventMealOption,
-    Item,
     Meal,
-    PackingItem,
+    PackingEquipment,
     User,
 )
 from app.schemas import (
@@ -59,7 +59,7 @@ def create_event(
     *, session: SessionDep, current_user: CurrentUser, event_in: EventCreate
 ) -> Any:
     """
-    Create new event with packing items and meal options.
+    Create new event with packing Equipments and meal options.
     Only teachers and superusers can create events.
     """
     if current_user.role != "superuser" and current_user.role != "teacher":
@@ -67,32 +67,32 @@ def create_event(
 
     # Create event
     event = Event.model_validate(
-        event_in.model_dump(exclude={"packing_items", "meal_options"}),
+        event_in.model_dump(exclude={"packing_equipments", "meal_options"}),
         update={"created_by_id": current_user.id},
     )
     session.add(event)
     session.commit()
     session.refresh(event)
 
-    # Add packing items if provided
-    if event_in.packing_items:
-        for item_data in event_in.packing_items:
-            # Verify item exists
-            item = session.get(Item, item_data.item_id)
-            if not item:
+    # Add packing Equipments if provided
+    if event_in.packing_equipments:
+        for equipment_data in event_in.packing_equipments:
+            # Verify equipment exists
+            equipment = session.get(Equipment, equipment_data.equipment_id)
+            if not equipment:
                 raise HTTPException(
                     status_code=404,
-                    detail=f"Item with id {item_data.item_id} not found",
+                    detail=f"equipment with id {equipment_data.equipment_id} not found",
                 )
-            # Create packing item with all details
-            packing_item = PackingItem(
+            # Create packing equipment with all details
+            packing_equipment = PackingEquipment(
                 event_id=event.id,
-                item_id=item_data.item_id,
-                quantity=item_data.quantity,
-                required=item_data.required,
-                notes=item_data.notes,
+                equipment_id=equipment_data.equipment_id,
+                quantity=equipment_data.quantity,
+                required=equipment_data.required,
+                notes=equipment_data.notes,
             )
-            session.add(packing_item)
+            session.add(packing_equipment)
         session.commit()
         session.refresh(event)
 
@@ -124,7 +124,7 @@ def update_event(
     event_in: EventUpdate,
 ) -> Any:
     """
-    Update an event and its packing items.
+    Update an event and its packing equipments.
     """
     # Check event exists and permissions
     event = session.get(Event, id)
@@ -134,32 +134,36 @@ def update_event(
         raise HTTPException(status_code=403, detail="Only teachers can update events")
 
     # Update event basic info
-    update_dict = event_in.model_dump(exclude_unset=True, exclude={"packing_items"})
+    update_dict = event_in.model_dump(
+        exclude_unset=True, exclude={"packing_equipments"}
+    )
     event.sqlmodel_update(update_dict)
     session.add(event)
 
-    # Update packing items if provided
-    if event_in.packing_items is not None:
-        # First verify all items exist
-        for item_data in event_in.packing_items:
-            if not session.get(Item, item_data.item_id):
+    # Update packing equipments if provided
+    if event_in.packing_equipments is not None:
+        # First verify all equipments exist
+        for equipment_data in event_in.packing_equipments:
+            if not session.get(Equipment, equipment_data.equipment_id):
                 raise HTTPException(
                     status_code=404,
-                    detail=f"Item with id {item_data.item_id} not found",
+                    detail=f"equipment with id {equipment_data.equipment_id} not found",
                 )
 
-        statement = delete(PackingItem).where(PackingItem.event_id == event.id)  # type: ignore
+        statement = delete(PackingEquipment).where(
+            PackingEquipment.event_id == event.id
+        )  # type: ignore
         session.exec(statement)  # type: ignore
-        # Add new packing items
-        for item_data in event_in.packing_items:
-            packing_item = PackingItem(
+        # Add new packing equipments
+        for equipment_data in event_in.packing_equipments:
+            packing_equipment = PackingEquipment(
                 event_id=event.id,
-                item_id=item_data.item_id,
-                quantity=item_data.quantity,
-                required=item_data.required,
-                notes=item_data.notes,
+                equipment_id=equipment_data.equipment_id,
+                quantity=equipment_data.quantity,
+                required=equipment_data.required,
+                notes=equipment_data.notes,
             )
-            session.add(packing_item)
+            session.add(packing_equipment)
 
     session.commit()
     session.refresh(event)
@@ -182,7 +186,7 @@ def delete_event(
     if current_user.role != "superuser" and current_user.role != "teacher":
         raise HTTPException(status_code=403, detail="Only teachers can delete events")
 
-    # No need to manually delete packing items
+    # No need to manually delete packing equipments
     # They will be automatically deleted due to cascade_delete=True
     session.delete(event)
     session.commit()

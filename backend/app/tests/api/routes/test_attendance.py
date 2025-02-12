@@ -4,7 +4,7 @@ from sqlmodel import Session
 from app.core.config import settings
 from app.tests.utils.attendance import (
     clean_attendance_tables,
-    create_attendance_with_packing_items,
+    create_attendance_with_packing_equipments,
     create_random_attendance,
 )
 from app.tests.utils.event import create_random_event
@@ -96,7 +96,9 @@ def test_get_event_packing_list(
     client: TestClient, student_token_headers: dict[str, str], db: Session
 ) -> None:
     user_id = get_user_id_from_token(client, student_token_headers)
-    attendance = create_attendance_with_packing_items(db, user_id=user_id, num_items=3)
+    attendance = create_attendance_with_packing_equipments(
+        db, user_id=user_id, num_equipments=3
+    )
 
     response = client.get(
         f"{settings.API_V1_STR}/attendance/{attendance.event_id}/packing-list",
@@ -109,10 +111,10 @@ def test_get_event_packing_list(
     assert content["count"] >= 1
     assert len(content["data"]) >= 1
     # Verify packing item structure
-    item_data = content["data"][0]
-    assert "item" in item_data
-    assert "quantity" in item_data
-    assert "required" in item_data
+    equipment_data = content["data"][0]
+    assert "equipment" in equipment_data
+    assert "quantity" in equipment_data
+    assert "required" in equipment_data
 
 
 def test_get_event_packing_list_not_attending(
@@ -138,12 +140,12 @@ def test_get_my_packing_lists(
 
     # Create multiple events with packing items
     num_events = 2
-    num_items_per_event = 3
+    num_equipments_per_event = 3
     created_events = []
 
     for _ in range(num_events):
-        attendance = create_attendance_with_packing_items(
-            db, user_id=user_id, num_items=num_items_per_event
+        attendance = create_attendance_with_packing_equipments(
+            db, user_id=user_id, num_equipments=num_equipments_per_event
         )
         created_events.append(str(attendance.event_id))
 
@@ -165,16 +167,16 @@ def test_get_my_packing_lists(
         assert "event_name" in packing_list
 
         # Verify items data
-        assert "items" in packing_list
-        items = packing_list["items"]
-        assert items["count"] == num_items_per_event
-        assert len(items["data"]) == num_items_per_event
+        assert "equipments" in packing_list
+        equipments = packing_list["equipments"]
+        assert equipments["count"] == num_equipments_per_event
+        assert len(equipments["data"]) == num_equipments_per_event
 
         # Verify structure of each item
-        for item in items["data"]:
-            assert "item" in item
-            assert "quantity" in item
-            assert "required" in item
+        for equipment in equipments["data"]:
+            assert "equipment" in equipment
+            assert "quantity" in equipment
+            assert "required" in equipment
 
 
 def test_get_my_packing_lists_no_events(
@@ -191,12 +193,12 @@ def test_get_my_packing_lists_no_events(
     assert len(content) == 0
 
 
-def test_get_my_packing_lists_no_items(
+def test_get_my_packing_lists_no_equipments(
     client: TestClient, student_token_headers: dict[str, str], db: Session
 ) -> None:
-    """Test when events have no packing items"""
+    """Test when events have no packing equipments"""
     user_id = get_user_id_from_token(client, student_token_headers)
-    _ = create_random_attendance(db, user_id=user_id)  # No packing items
+    _ = create_random_attendance(db, user_id=user_id)  # No packing equipments
 
     response = client.get(
         f"{settings.API_V1_STR}/attendance/my-packing-lists",
@@ -204,5 +206,5 @@ def test_get_my_packing_lists_no_items(
     )
     assert response.status_code == 200
     content = response.json()
-    assert content[0]["items"]["count"] == 0
-    assert len(content[0]["items"]["data"]) == 0
+    assert content[0]["equipments"]["count"] == 0
+    assert len(content[0]["equipments"]["data"]) == 0

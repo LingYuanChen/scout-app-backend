@@ -2,34 +2,34 @@ from uuid import UUID
 
 from sqlmodel import Field, SQLModel
 
-from .item import ItemPublic
+from .equipment import EquipmentPublic
 
 
-class PackingItemBase(SQLModel):
+class PackingEquipmentBase(SQLModel):
     quantity: int = Field(default=1)
     required: bool = Field(default=True)
     notes: str | None = Field(default=None, max_length=255)
 
 
-class PackingItemCreate(PackingItemBase):
-    item_id: UUID
+class PackingEquipmentCreate(PackingEquipmentBase):
+    equipment_id: UUID
 
 
-class PackingItemUpdate(SQLModel):
+class PackingEquipmentUpdate(SQLModel):
     quantity: int | None = None
     required: bool | None = None
 
 
-class PackingItemPublic(PackingItemBase):
-    item: ItemPublic
+class PackingEquipmentPublic(PackingEquipmentBase):
+    equipment: EquipmentPublic
 
 
-class PackingItemsPublic(SQLModel):
-    data: list[PackingItemPublic]
+class PackingEquipmentsPublic(SQLModel):
+    data: list[PackingEquipmentPublic]
     count: int
 
 
 class EventPackingList(SQLModel):
     event_id: UUID
     event_name: str
-    items: PackingItemsPublic
+    equipments: PackingEquipmentsPublic

@@ -9,7 +9,7 @@ from app.db import Attendance, Event
 from app.schemas import (
     EventPackingList,
     Message,
-    PackingItemsPublic,
+    PackingEquipmentsPublic,
 )
 
 router = APIRouter(prefix="/attendance", tags=["attendance"])
@@ -80,7 +80,7 @@ def get_my_events(
     return []
 
 
-@router.get("/{event_id}/packing-list", response_model=PackingItemsPublic)
+@router.get("/{event_id}/packing-list", response_model=PackingEquipmentsPublic)
 def get_event_packing_list(
     *,
     session: SessionDep,
@@ -98,10 +98,10 @@ def get_event_packing_list(
             status_code=403, detail="Must be attending the event to view packing list"
         )
 
-    items, count = crud.get_event_packing_items(
+    equipments, count = crud.get_event_packing_equipments(
         session=session, event_id=event.id, skip=skip, limit=limit
     )
-    return PackingItemsPublic(data=items, count=count)
+    return PackingEquipmentsPublic(data=equipments, count=count)
 
 
 @router.get("/my-packing-lists", response_model=list[EventPackingList])
@@ -125,14 +125,14 @@ def get_my_packing_lists(
     # Get packing lists for each event
     packing_lists = []
     for event in attended_events:
-        items, count = crud.get_event_packing_items(
+        equipments, count = crud.get_event_packing_equipments(
             session=session, event_id=event.id, skip=0, limit=100
         )
         packing_lists.append(
             EventPackingList(
                 event_id=event.id,
                 event_name=event.name,
-                items=PackingItemsPublic(data=items, count=count),
+                equipments=PackingEquipmentsPublic(data=equipments, count=count),
             )
         )
 
