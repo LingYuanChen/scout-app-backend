@@ -15,7 +15,7 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { type SubmitHandler, useForm } from "react-hook-form"
 
-import { type ApiError, type EquipmentCreate, EquipmentService } from "../../client"
+import { type ApiError, type EquipmentCreate, EquipmentsService } from "../../client"
 import useCustomToast from "../../hooks/useCustomToast"
 import { handleError } from "../../utils"
 
@@ -43,7 +43,7 @@ const AddItem = ({ isOpen, onClose }: AddItemProps) => {
 
   const mutation = useMutation({
     mutationFn: (data: EquipmentCreate) =>
-      EquipmentService.createEquipment({ requestBody: data }),
+      EquipmentsService.createEquipment({ requestBody: data }),
     onSuccess: () => {
       showToast("Success!", "Equipment created successfully.", "success")
       reset()

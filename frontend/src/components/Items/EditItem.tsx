@@ -19,7 +19,7 @@ import {
   type ApiError,
   type EquipmentPublic,
   type EquipmentUpdate,
-  EquipmentService,
+  EquipmentsService,
 } from "../../client"
 import useCustomToast from "../../hooks/useCustomToast"
 import { handleError } from "../../utils"
@@ -46,7 +46,7 @@ const EditItem = ({ item, isOpen, onClose }: EditItemProps) => {
 
   const mutation = useMutation({
     mutationFn: (data: EquipmentUpdate) =>
-      EquipmentService.updateEquipment({ id: item.id, requestBody: data }),
+      EquipmentsService.updateEquipment({ id: item.id, requestBody: data }),
     onSuccess: () => {
       showToast("Success!", "Equipment updated successfully.", "success")
       onClose()
