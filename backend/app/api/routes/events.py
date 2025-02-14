@@ -151,9 +151,9 @@ def update_event(
                 )
 
         statement = delete(PackingEquipment).where(
-            PackingEquipment.event_id == event.id
-        )  # type: ignore
-        session.exec(statement)
+            PackingEquipment.event_id == event.id  # type: ignore
+        )
+        session.exec(statement)  # type: ignore
         # Add new packing equipments
         for equipment_data in event_in.packing_equipments:
             packing_equipment = PackingEquipment(
