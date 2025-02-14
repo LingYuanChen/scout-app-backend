@@ -15,7 +15,7 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { type SubmitHandler, useForm } from "react-hook-form"
 
-import { type ApiError, type ItemCreate, ItemsService } from "../../client"
+import { type ApiError, type EquipmentCreate, EquipmentService } from "../../client"
 import useCustomToast from "../../hooks/useCustomToast"
 import { handleError } from "../../utils"
 
@@ -32,7 +32,7 @@ const AddItem = ({ isOpen, onClose }: AddItemProps) => {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<ItemCreate>({
+  } = useForm<EquipmentCreate>({
     mode: "onBlur",
     criteriaMode: "all",
     defaultValues: {
@@ -42,10 +42,10 @@ const AddItem = ({ isOpen, onClose }: AddItemProps) => {
   })
 
   const mutation = useMutation({
-    mutationFn: (data: ItemCreate) =>
-      ItemsService.createItem({ requestBody: data }),
+    mutationFn: (data: EquipmentCreate) =>
+      EquipmentService.createEquipment({ requestBody: data }),
     onSuccess: () => {
-      showToast("Success!", "Item created successfully.", "success")
+      showToast("Success!", "Equipment created successfully.", "success")
       reset()
       onClose()
     },
@@ -53,11 +53,11 @@ const AddItem = ({ isOpen, onClose }: AddItemProps) => {
       handleError(err, showToast)
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["items"] })
+      queryClient.invalidateQueries({ queryKey: ["equipment"] })
     },
   })
 
-  const onSubmit: SubmitHandler<ItemCreate> = (data) => {
+  const onSubmit: SubmitHandler<EquipmentCreate> = (data) => {
     mutation.mutate(data)
   }
 
