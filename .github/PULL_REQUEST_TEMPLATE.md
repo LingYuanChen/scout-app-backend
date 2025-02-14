@@ -1,4 +1,3 @@
-<!-- .github/pull_request_template.md -->
 **High level description:**
 <!-- High level description of what the PR addresses should be put here. Should be detailed enough to communicate to the client what this PR addresses without diving into the technical nuances. -->
 
