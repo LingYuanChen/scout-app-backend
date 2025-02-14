@@ -14,6 +14,22 @@ import type {
   AttendanceGetEventPackingListResponse,
   AttendanceGetMyPackingListsData,
   AttendanceGetMyPackingListsResponse,
+  EquipmentsReadEquipmentsData,
+  EquipmentsReadEquipmentsResponse,
+  EquipmentsCreateEquipmentData,
+  EquipmentsCreateEquipmentResponse,
+  EquipmentsReadEquipmentData,
+  EquipmentsReadEquipmentResponse,
+  EquipmentsUpdateEquipmentData,
+  EquipmentsUpdateEquipmentResponse,
+  EquipmentsDeleteEquipmentData,
+  EquipmentsDeleteEquipmentResponse,
+  EquipmentsAddPackingEquipmentData,
+  EquipmentsAddPackingEquipmentResponse,
+  EquipmentsListPackingEquipmentsData,
+  EquipmentsListPackingEquipmentsResponse,
+  EquipmentsGetEventEquipmentsData,
+  EquipmentsGetEventEquipmentsResponse,
   EventsReadEventsData,
   EventsReadEventsResponse,
   EventsCreateEventData,
@@ -24,22 +40,6 @@ import type {
   EventsUpdateEventResponse,
   EventsDeleteEventData,
   EventsDeleteEventResponse,
-  ItemsReadItemsData,
-  ItemsReadItemsResponse,
-  ItemsCreateItemData,
-  ItemsCreateItemResponse,
-  ItemsReadItemData,
-  ItemsReadItemResponse,
-  ItemsUpdateItemData,
-  ItemsUpdateItemResponse,
-  ItemsDeleteItemData,
-  ItemsDeleteItemResponse,
-  ItemsAddPackingItemData,
-  ItemsAddPackingItemResponse,
-  ItemsListPackingItemsData,
-  ItemsListPackingItemsResponse,
-  ItemsGetEventItemsData,
-  ItemsGetEventItemsResponse,
   LoginLoginAccessTokenData,
   LoginLoginAccessTokenResponse,
   LoginTestTokenResponse,
@@ -169,7 +169,7 @@ export class AttendanceService {
    * @param data.eventId
    * @param data.skip
    * @param data.limit
-   * @returns PackingItemsPublic Successful Response
+   * @returns PackingEquipmentsPublic Successful Response
    * @throws ApiError
    */
   public static getEventPackingList(
@@ -217,6 +217,216 @@ export class AttendanceService {
   }
 }
 
+export class EquipmentsService {
+  /**
+   * Read Equipments
+   * Retrieve equipments catalog.
+   * Only teachers and superusers can access this endpoint.
+   * @param data The data for the request.
+   * @param data.skip
+   * @param data.limit
+   * @returns EquipmentsPublic Successful Response
+   * @throws ApiError
+   */
+  public static readEquipments(
+    data: EquipmentsReadEquipmentsData = {},
+  ): CancelablePromise<EquipmentsReadEquipmentsResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/equipments/",
+      query: {
+        skip: data.skip,
+        limit: data.limit,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Create Equipment
+   * Create new equipment in catalog.
+   * Only teachers and superusers can create equipments.
+   * @param data The data for the request.
+   * @param data.requestBody
+   * @returns EquipmentPublic Successful Response
+   * @throws ApiError
+   */
+  public static createEquipment(
+    data: EquipmentsCreateEquipmentData,
+  ): CancelablePromise<EquipmentsCreateEquipmentResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/v1/equipments/",
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Read Equipment
+   * Get equipment by ID.
+   * @param data The data for the request.
+   * @param data.id
+   * @returns EquipmentPublic Successful Response
+   * @throws ApiError
+   */
+  public static readEquipment(
+    data: EquipmentsReadEquipmentData,
+  ): CancelablePromise<EquipmentsReadEquipmentResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/equipments/{id}",
+      path: {
+        id: data.id,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Update Equipment
+   * Update an equipment.
+   * Only the teacher who created the equipment or superusers can update it.
+   * @param data The data for the request.
+   * @param data.id
+   * @param data.requestBody
+   * @returns EquipmentPublic Successful Response
+   * @throws ApiError
+   */
+  public static updateEquipment(
+    data: EquipmentsUpdateEquipmentData,
+  ): CancelablePromise<EquipmentsUpdateEquipmentResponse> {
+    return __request(OpenAPI, {
+      method: "PUT",
+      url: "/api/v1/equipments/{id}",
+      path: {
+        id: data.id,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Delete Equipment
+   * Delete an equipment.
+   * Only the teacher who created the equipment or superusers can delete it.
+   * @param data The data for the request.
+   * @param data.id
+   * @returns Message Successful Response
+   * @throws ApiError
+   */
+  public static deleteEquipment(
+    data: EquipmentsDeleteEquipmentData,
+  ): CancelablePromise<EquipmentsDeleteEquipmentResponse> {
+    return __request(OpenAPI, {
+      method: "DELETE",
+      url: "/api/v1/equipments/{id}",
+      path: {
+        id: data.id,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Add Packing Equipment
+   * Add an equipment to event's packing list.
+   * @param data The data for the request.
+   * @param data.eventId
+   * @param data.requestBody
+   * @returns PackingEquipmentPublic Successful Response
+   * @throws ApiError
+   */
+  public static addPackingEquipment(
+    data: EquipmentsAddPackingEquipmentData,
+  ): CancelablePromise<EquipmentsAddPackingEquipmentResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/v1/equipments/{event_id}/packing",
+      path: {
+        event_id: data.eventId,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * List Packing Equipments
+   * List all packing equipments for an event.
+   * @param data The data for the request.
+   * @param data.eventId
+   * @param data.skip
+   * @param data.limit
+   * @returns PackingEquipmentsPublic Successful Response
+   * @throws ApiError
+   */
+  public static listPackingEquipments(
+    data: EquipmentsListPackingEquipmentsData,
+  ): CancelablePromise<EquipmentsListPackingEquipmentsResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/equipments/event/{event_id}/packing",
+      path: {
+        event_id: data.eventId,
+      },
+      query: {
+        skip: data.skip,
+        limit: data.limit,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+
+  /**
+   * Get Event Equipments
+   * Get all equipments required for an event.
+   * Students must be attending the event to see its packing list.
+   * @param data The data for the request.
+   * @param data.eventId
+   * @param data.skip
+   * @param data.limit
+   * @returns PackingEquipmentsPublic Successful Response
+   * @throws ApiError
+   */
+  public static getEventEquipments(
+    data: EquipmentsGetEventEquipmentsData,
+  ): CancelablePromise<EquipmentsGetEventEquipmentsResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/v1/equipments/event/{event_id}",
+      path: {
+        event_id: data.eventId,
+      },
+      query: {
+        skip: data.skip,
+        limit: data.limit,
+      },
+      errors: {
+        422: "Validation Error",
+      },
+    })
+  }
+}
+
 export class EventsService {
   /**
    * Read Events
@@ -245,7 +455,7 @@ export class EventsService {
 
   /**
    * Create Event
-   * Create new event with packing items and meal options.
+   * Create new event with packing Equipments and meal options.
    * Only teachers and superusers can create events.
    * @param data The data for the request.
    * @param data.requestBody
@@ -291,7 +501,7 @@ export class EventsService {
 
   /**
    * Update Event
-   * Update an event and its packing items.
+   * Update an event and its packing equipments.
    * @param data The data for the request.
    * @param data.id
    * @param data.requestBody
@@ -331,216 +541,6 @@ export class EventsService {
       url: "/api/v1/events/{id}",
       path: {
         id: data.id,
-      },
-      errors: {
-        422: "Validation Error",
-      },
-    })
-  }
-}
-
-export class ItemsService {
-  /**
-   * Read Items
-   * Retrieve items catalog.
-   * Only teachers and superusers can access this endpoint.
-   * @param data The data for the request.
-   * @param data.skip
-   * @param data.limit
-   * @returns ItemsPublic Successful Response
-   * @throws ApiError
-   */
-  public static readItems(
-    data: ItemsReadItemsData = {},
-  ): CancelablePromise<ItemsReadItemsResponse> {
-    return __request(OpenAPI, {
-      method: "GET",
-      url: "/api/v1/items/",
-      query: {
-        skip: data.skip,
-        limit: data.limit,
-      },
-      errors: {
-        422: "Validation Error",
-      },
-    })
-  }
-
-  /**
-   * Create Item
-   * Create new item in catalog.
-   * Only teachers and superusers can create items.
-   * @param data The data for the request.
-   * @param data.requestBody
-   * @returns ItemPublic Successful Response
-   * @throws ApiError
-   */
-  public static createItem(
-    data: ItemsCreateItemData,
-  ): CancelablePromise<ItemsCreateItemResponse> {
-    return __request(OpenAPI, {
-      method: "POST",
-      url: "/api/v1/items/",
-      body: data.requestBody,
-      mediaType: "application/json",
-      errors: {
-        422: "Validation Error",
-      },
-    })
-  }
-
-  /**
-   * Read Item
-   * Get item by ID.
-   * @param data The data for the request.
-   * @param data.id
-   * @returns ItemPublic Successful Response
-   * @throws ApiError
-   */
-  public static readItem(
-    data: ItemsReadItemData,
-  ): CancelablePromise<ItemsReadItemResponse> {
-    return __request(OpenAPI, {
-      method: "GET",
-      url: "/api/v1/items/{id}",
-      path: {
-        id: data.id,
-      },
-      errors: {
-        422: "Validation Error",
-      },
-    })
-  }
-
-  /**
-   * Update Item
-   * Update an item.
-   * Only the teacher who created the item or superusers can update it.
-   * @param data The data for the request.
-   * @param data.id
-   * @param data.requestBody
-   * @returns ItemPublic Successful Response
-   * @throws ApiError
-   */
-  public static updateItem(
-    data: ItemsUpdateItemData,
-  ): CancelablePromise<ItemsUpdateItemResponse> {
-    return __request(OpenAPI, {
-      method: "PUT",
-      url: "/api/v1/items/{id}",
-      path: {
-        id: data.id,
-      },
-      body: data.requestBody,
-      mediaType: "application/json",
-      errors: {
-        422: "Validation Error",
-      },
-    })
-  }
-
-  /**
-   * Delete Item
-   * Delete an item.
-   * Only the teacher who created the item or superusers can delete it.
-   * @param data The data for the request.
-   * @param data.id
-   * @returns Message Successful Response
-   * @throws ApiError
-   */
-  public static deleteItem(
-    data: ItemsDeleteItemData,
-  ): CancelablePromise<ItemsDeleteItemResponse> {
-    return __request(OpenAPI, {
-      method: "DELETE",
-      url: "/api/v1/items/{id}",
-      path: {
-        id: data.id,
-      },
-      errors: {
-        422: "Validation Error",
-      },
-    })
-  }
-
-  /**
-   * Add Packing Item
-   * Add an item to event's packing list.
-   * @param data The data for the request.
-   * @param data.eventId
-   * @param data.requestBody
-   * @returns PackingItemPublic Successful Response
-   * @throws ApiError
-   */
-  public static addPackingItem(
-    data: ItemsAddPackingItemData,
-  ): CancelablePromise<ItemsAddPackingItemResponse> {
-    return __request(OpenAPI, {
-      method: "POST",
-      url: "/api/v1/items/{event_id}/packing",
-      path: {
-        event_id: data.eventId,
-      },
-      body: data.requestBody,
-      mediaType: "application/json",
-      errors: {
-        422: "Validation Error",
-      },
-    })
-  }
-
-  /**
-   * List Packing Items
-   * List all packing items for an event.
-   * @param data The data for the request.
-   * @param data.eventId
-   * @param data.skip
-   * @param data.limit
-   * @returns PackingItemsPublic Successful Response
-   * @throws ApiError
-   */
-  public static listPackingItems(
-    data: ItemsListPackingItemsData,
-  ): CancelablePromise<ItemsListPackingItemsResponse> {
-    return __request(OpenAPI, {
-      method: "GET",
-      url: "/api/v1/items/event/{event_id}/packing",
-      path: {
-        event_id: data.eventId,
-      },
-      query: {
-        skip: data.skip,
-        limit: data.limit,
-      },
-      errors: {
-        422: "Validation Error",
-      },
-    })
-  }
-
-  /**
-   * Get Event Items
-   * Get all items required for an event.
-   * Students must be attending the event to see its packing list.
-   * @param data The data for the request.
-   * @param data.eventId
-   * @param data.skip
-   * @param data.limit
-   * @returns PackingItemsPublic Successful Response
-   * @throws ApiError
-   */
-  public static getEventItems(
-    data: ItemsGetEventItemsData,
-  ): CancelablePromise<ItemsGetEventItemsResponse> {
-    return __request(OpenAPI, {
-      method: "GET",
-      url: "/api/v1/items/event/{event_id}",
-      path: {
-        event_id: data.eventId,
-      },
-      query: {
-        skip: data.skip,
-        limit: data.limit,
       },
       errors: {
         422: "Validation Error",
