@@ -1,8 +1,9 @@
+<!-- .github/pull_request_template.md -->
 **High level description:**
-High level description of what the PR addresses should be put here. Should be detailed enough to communicate to the client what this PR addresses without diving into the technical nuances.
+<!-- High level description of what the PR addresses should be put here. Should be detailed enough to communicate to the client what this PR addresses without diving into the technical nuances. -->
 
 **Technical details:**
-The technical details can be placed here for the knowledge of other developers. Any detailed caveats or specific deployment steps should be outlined here.
+<!-- The technical details can be placed here for the knowledge of other developers. Any detailed caveats or specific deployment steps should be outlined here. -->
 
 ## Type of change
 
