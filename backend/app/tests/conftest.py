@@ -8,12 +8,12 @@ from app.core.config import settings
 from app.core.db import engine, init_db
 from app.db import (
     Attendance,
+    Equipment,
     Event,
     EventMealOption,
-    Item,
     Meal,
     MealChoice,
-    PackingItem,
+    PackingEquipment,
     User,
 )
 from app.main import app
@@ -28,11 +28,11 @@ def db() -> Generator[Session, None, None]:
         yield session
         # List of models to delete
         models_to_delete = [
-            PackingItem,
+            PackingEquipment,
             MealChoice,
             EventMealOption,
             Attendance,
-            Item,
+            Equipment,
             Event,
             Meal,
             User,

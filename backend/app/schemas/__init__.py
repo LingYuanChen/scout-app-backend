@@ -10,6 +10,13 @@ from .auth import (
     TokenPayload,
     UpdatePassword,
 )
+from .equipment import (
+    EquipmentBase,
+    EquipmentCreate,
+    EquipmentPublic,
+    EquipmentsPublic,
+    EquipmentUpdate,
+)
 from .event import (
     EventBase,
     EventCreate,
@@ -20,13 +27,6 @@ from .event import (
 from .event_meal_option import (
     EventMealOptionCreate,
 )
-from .item import (
-    ItemBase,
-    ItemCreate,
-    ItemPublic,
-    ItemsPublic,
-    ItemUpdate,
-)
 from .meal import (
     MealBase,
     MealCreate,
@@ -35,11 +35,11 @@ from .meal import (
 )
 from .packing import (
     EventPackingList,
-    PackingItemBase,
-    PackingItemCreate,
-    PackingItemPublic,
-    PackingItemsPublic,
-    PackingItemUpdate,
+    PackingEquipmentBase,
+    PackingEquipmentCreate,
+    PackingEquipmentPublic,
+    PackingEquipmentsPublic,
+    PackingEquipmentUpdate,
 )
 from .user import (
     UserBase,
@@ -66,12 +66,12 @@ __all__ = [
     "NewPassword",
     "UpdatePassword",
     "Message",
-    # Item schemas
-    "ItemBase",
-    "ItemCreate",
-    "ItemUpdate",
-    "ItemPublic",
-    "ItemsPublic",
+    # Equipment schemas
+    "EquipmentBase",
+    "EquipmentCreate",
+    "EquipmentUpdate",
+    "EquipmentPublic",
+    "EquipmentsPublic",
     # Event schemas
     "EventBase",
     "EventCreate",
@@ -84,11 +84,11 @@ __all__ = [
     "MealUpdate",
     "MealPublic",
     # Packing schemas
-    "PackingItemBase",
-    "PackingItemCreate",
-    "PackingItemUpdate",
-    "PackingItemPublic",
-    "PackingItemsPublic",
+    "PackingEquipmentBase",
+    "PackingEquipmentCreate",
+    "PackingEquipmentUpdate",
+    "PackingEquipmentPublic",
+    "PackingEquipmentsPublic",
     "EventPackingList",
     # Attendance schemas
     "MealChoiceCreateBase",

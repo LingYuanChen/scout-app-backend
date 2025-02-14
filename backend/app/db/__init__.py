@@ -1,22 +1,22 @@
 from .tables import (
     Attendance,
+    Equipment,
     Event,
     EventMealOption,
-    Item,
     Meal,
     MealChoice,
     MealType,
-    PackingItem,
+    PackingEquipment,
     User,
 )
 
 __all__ = [
     "User",
-    "Item",
+    "Equipment",
     "Event",
     "Meal",
     "EventMealOption",
-    "PackingItem",
+    "PackingEquipment",
     "MealChoice",
     "Attendance",
     "MealType",

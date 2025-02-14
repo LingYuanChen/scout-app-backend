@@ -7,3 +7,4 @@ node_modules/
 # Copier configuration and answers
 .copier/
 .copier-answers.yml
+.zeabur/

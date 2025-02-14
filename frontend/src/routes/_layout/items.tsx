@@ -15,7 +15,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { useEffect } from "react"
 import { z } from "zod"
 
-import { ItemsService } from "../../client"
+import {EquipmentsPublic, EquipmentsService } from "../../client"
 import ActionsMenu from "../../components/Common/ActionsMenu"
 import Navbar from "../../components/Common/Navbar"
 import AddItem from "../../components/Items/AddItem"
@@ -35,8 +35,8 @@ const PER_PAGE = 5
 function getItemsQueryOptions({ page }: { page: number }) {
   return {
     queryFn: () =>
-      ItemsService.readItems({ skip: (page - 1) * PER_PAGE, limit: PER_PAGE }),
-    queryKey: ["items", { page }],
+      EquipmentsService.readEquipments({ skip: (page - 1) * PER_PAGE, limit: PER_PAGE }),
+    queryKey: ["equipment", { page }],
   }
 }
 
@@ -51,7 +51,7 @@ function ItemsTable() {
     data: items,
     isPending,
     isPlaceholderData,
-  } = useQuery({
+  } = useQuery<EquipmentsPublic>({
     ...getItemsQueryOptions({ page }),
     placeholderData: (prevData) => prevData,
   })

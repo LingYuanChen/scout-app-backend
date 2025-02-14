@@ -9,12 +9,37 @@ export type Body_login_login_access_token = {
   client_secret?: string | null
 }
 
+export type EquipmentCreate = {
+  title: string
+  description?: string | null
+  category?: string | null
+}
+
+export type EquipmentPublic = {
+  title: string
+  description?: string | null
+  category?: string | null
+  id: string
+  owner_id: string
+}
+
+export type EquipmentsPublic = {
+  data: Array<EquipmentPublic>
+  count: number
+}
+
+export type EquipmentUpdate = {
+  title?: string | null
+  description?: string | null
+  category?: string | null
+}
+
 export type EventCreate = {
   name: string
   description?: string | null
   start_date: string
   end_date: string
-  packing_items?: Array<PackingItemCreate> | null
+  packing_equipments?: Array<PackingEquipmentCreate> | null
   meal_options?: Array<EventMealOptionCreate> | null
 }
 
@@ -28,7 +53,7 @@ export type EventMealOptionCreate = {
 export type EventPackingList = {
   event_id: string
   event_name: string
-  items: PackingItemsPublic
+  equipments: PackingEquipmentsPublic
 }
 
 export type EventPublic = {
@@ -38,7 +63,7 @@ export type EventPublic = {
   end_date: string
   id: string
   created_by_id: string
-  packing_items: Array<PackingItemPublic>
+  packing_equipments: Array<PackingEquipmentPublic>
 }
 
 export type EventsPublic = {
@@ -51,36 +76,11 @@ export type EventUpdate = {
   description?: string | null
   start_date?: string | null
   end_date?: string | null
-  packing_items?: Array<PackingItemCreate> | null
+  packing_equipments?: Array<PackingEquipmentCreate> | null
 }
 
 export type HTTPValidationError = {
   detail?: Array<ValidationError>
-}
-
-export type ItemCreate = {
-  title: string
-  description?: string | null
-  category?: string | null
-}
-
-export type ItemPublic = {
-  title: string
-  description?: string | null
-  category?: string | null
-  id: string
-  owner_id: string
-}
-
-export type ItemsPublic = {
-  data: Array<ItemPublic>
-  count: number
-}
-
-export type ItemUpdate = {
-  title?: string | null
-  description?: string | null
-  category?: string | null
 }
 
 export type MealChoice = {
@@ -147,22 +147,22 @@ export type NewPassword = {
   new_password: string
 }
 
-export type PackingItemCreate = {
+export type PackingEquipmentCreate = {
   quantity?: number
   required?: boolean
   notes?: string | null
-  item_id: string
+  equipment_id: string
 }
 
-export type PackingItemPublic = {
+export type PackingEquipmentPublic = {
   quantity?: number
   required?: boolean
   notes?: string | null
-  item: ItemPublic
+  equipment: EquipmentPublic
 }
 
-export type PackingItemsPublic = {
-  data: Array<PackingItemPublic>
+export type PackingEquipmentsPublic = {
+  data: Array<PackingEquipmentPublic>
   count: number
 }
 
@@ -250,7 +250,7 @@ export type AttendanceGetEventPackingListData = {
   skip?: number
 }
 
-export type AttendanceGetEventPackingListResponse = PackingItemsPublic
+export type AttendanceGetEventPackingListResponse = PackingEquipmentsPublic
 
 export type AttendanceGetMyPackingListsData = {
   limit?: number
@@ -258,6 +258,61 @@ export type AttendanceGetMyPackingListsData = {
 }
 
 export type AttendanceGetMyPackingListsResponse = Array<EventPackingList>
+
+export type EquipmentsReadEquipmentsData = {
+  limit?: number
+  skip?: number
+}
+
+export type EquipmentsReadEquipmentsResponse = EquipmentsPublic
+
+export type EquipmentsCreateEquipmentData = {
+  requestBody: EquipmentCreate
+}
+
+export type EquipmentsCreateEquipmentResponse = EquipmentPublic
+
+export type EquipmentsReadEquipmentData = {
+  id: string
+}
+
+export type EquipmentsReadEquipmentResponse = EquipmentPublic
+
+export type EquipmentsUpdateEquipmentData = {
+  id: string
+  requestBody: EquipmentUpdate
+}
+
+export type EquipmentsUpdateEquipmentResponse = EquipmentPublic
+
+export type EquipmentsDeleteEquipmentData = {
+  id: string
+}
+
+export type EquipmentsDeleteEquipmentResponse = Message
+
+export type EquipmentsAddPackingEquipmentData = {
+  eventId: string
+  requestBody: PackingEquipmentCreate
+}
+
+export type EquipmentsAddPackingEquipmentResponse = PackingEquipmentPublic
+
+export type EquipmentsListPackingEquipmentsData = {
+  eventId: string
+  limit?: number
+  skip?: number
+}
+
+export type EquipmentsListPackingEquipmentsResponse = PackingEquipmentsPublic
+
+export type EquipmentsGetEventEquipmentsData = {
+  eventId: string
+  limit?: number
+  skip?: number
+}
+
+export type EquipmentsGetEventEquipmentsResponse = PackingEquipmentsPublic
 
 export type EventsReadEventsData = {
   limit?: number
@@ -290,61 +345,6 @@ export type EventsDeleteEventData = {
 }
 
 export type EventsDeleteEventResponse = unknown
-
-export type ItemsReadItemsData = {
-  limit?: number
-  skip?: number
-}
-
-export type ItemsReadItemsResponse = ItemsPublic
-
-export type ItemsCreateItemData = {
-  requestBody: ItemCreate
-}
-
-export type ItemsCreateItemResponse = ItemPublic
-
-export type ItemsReadItemData = {
-  id: string
-}
-
-export type ItemsReadItemResponse = ItemPublic
-
-export type ItemsUpdateItemData = {
-  id: string
-  requestBody: ItemUpdate
-}
-
-export type ItemsUpdateItemResponse = ItemPublic
-
-export type ItemsDeleteItemData = {
-  id: string
-}
-
-export type ItemsDeleteItemResponse = Message
-
-export type ItemsAddPackingItemData = {
-  eventId: string
-  requestBody: PackingItemCreate
-}
-
-export type ItemsAddPackingItemResponse = PackingItemPublic
-
-export type ItemsListPackingItemsData = {
-  eventId: string
-  limit?: number
-  skip?: number
-}
-
-export type ItemsListPackingItemsResponse = PackingItemsPublic
-
-export type ItemsGetEventItemsData = {
-  eventId: string
-  limit?: number
-  skip?: number
-}
-
-export type ItemsGetEventItemsResponse = PackingItemsPublic
 
 export type LoginLoginAccessTokenData = {
   formData: Body_login_login_access_token

@@ -7,16 +7,16 @@ from sqlmodel import Session, select
 from app.core.security import get_password_hash, verify_password
 from app.db import (
     Attendance,
+    Equipment,
     Event,
-    Item,
-    PackingItem,
+    PackingEquipment,
     User,
 )
 from app.schemas import (
+    EquipmentCreate,
     EventCreate,
     EventUpdate,
-    ItemCreate,
-    PackingItemCreate,
+    PackingEquipmentCreate,
     UserCreate,
     UserUpdate,
 )
@@ -61,12 +61,14 @@ def authenticate(*, session: Session, email: str, password: str) -> User | None:
     return db_user
 
 
-def create_item(*, session: Session, item_in: ItemCreate, owner_id: uuid.UUID) -> Item:
-    db_item = Item.model_validate(item_in, update={"owner_id": owner_id})
-    session.add(db_item)
+def create_equipment(
+    *, session: Session, equipment_in: EquipmentCreate, owner_id: uuid.UUID
+) -> Equipment:
+    db_equipment = Equipment.model_validate(equipment_in, update={"owner_id": owner_id})
+    session.add(db_equipment)
     session.commit()
-    session.refresh(db_item)
-    return db_item
+    session.refresh(db_equipment)
+    return db_equipment
 
 
 def create_event(
@@ -99,38 +101,40 @@ def delete_event(*, session: Session, event: Event) -> None:
     session.commit()
 
 
-def create_packing_item(
+def create_packing_equipment(
     *,
     session: Session,
     event_id: uuid.UUID,
-    item_id: uuid.UUID,
-    packing_item_in: PackingItemCreate,
-) -> PackingItem:
-    db_packing_item = PackingItem(
-        **packing_item_in.model_dump(), event_id=event_id, item_id=item_id
+    equipment_id: uuid.UUID,
+    packing_equipment_in: PackingEquipmentCreate,
+) -> PackingEquipment:
+    db_packing_equipment = PackingEquipment(
+        **packing_equipment_in.model_dump(),
+        event_id=event_id,
+        equipment_id=equipment_id,
     )
-    session.add(db_packing_item)
+    session.add(db_packing_equipment)
     session.commit()
-    session.refresh(db_packing_item)
-    return db_packing_item
+    session.refresh(db_packing_equipment)
+    return db_packing_equipment
 
 
-def get_event_packing_items(
+def get_event_packing_equipments(
     *, session: Session, event_id: uuid.UUID, skip: int = 0, limit: int = 100
-) -> tuple[list[PackingItem], int]:
+) -> tuple[list[PackingEquipment], int]:
     statement = (
-        select(PackingItem)
-        .where(PackingItem.event_id == event_id)
+        select(PackingEquipment)
+        .where(PackingEquipment.event_id == event_id)
         .offset(skip)
         .limit(limit)
     )
-    items = list(session.exec(statement).all())
+    equipments = list(session.exec(statement).all())
     count = session.exec(
         select(func.count())
-        .select_from(PackingItem)
-        .where(PackingItem.event_id == event_id)
+        .select_from(PackingEquipment)
+        .where(PackingEquipment.event_id == event_id)
     ).one()
-    return items, count
+    return equipments, count
 
 
 def get_event_attendees(

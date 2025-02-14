@@ -1,25 +1,77 @@
-docs:
-  - all:
-    - changed-files:
-      - any-glob-to-any-file:
-        - '**/*.md'
-      - all-globs-to-all-files:
-        - '!frontend/**'
-        - '!backend/**'
-        - '!.github/**'
-        - '!scripts/**'
-        - '!.gitignore'
-        - '!.pre-commit-config.yaml'
+# Documentation
+documentation:
+  - any:
+    - head-branch: ['docs/*', 'document/*', 'documentation/*']
+    - all:
+      - changed-files:
+        - any-glob-to-any-file:
+          - '**/*.md'
+          - 'docs/**'
 
-internal:
-  - all:
+# Bug fixes
+bug:
+  - head-branch: ['fix/*', 'bug/*', 'hotfix/*']
+
+# Dependencies
+dependencies:
+  - any:
+    - head-branch: ['deps/*', 'dependencies/*']
     - changed-files:
       - any-glob-to-any-file:
-        - .github/**
-        - scripts/**
-        - .gitignore
-        - .pre-commit-config.yaml
-      - all-globs-to-all-files:
-        - '!./**/*.md'
-        - '!frontend/**'
-        - '!backend/**'
+        - 'requirements.txt'
+        - 'package.json'
+        - 'package-lock.json'
+        - 'poetry.lock'
+        - 'pyproject.toml'
+
+# Enhancements/Features
+enhancement:
+  - head-branch: ['feat/*', 'feature/*', 'enhance/*', 'enhancement/*']
+
+# GitHub Actions
+github_actions:
+  - any:
+    - head-branch: ['action/*', 'workflow/*']
+    - changed-files:
+      - any-glob-to-any-file:
+        - '.github/workflows/**'
+        - '.github/actions/**'
+
+# Testing
+test:
+  - any:
+    - head-branch: ['test/*']
+    - changed-files:
+      - any-glob-to-any-file:
+        - '**/*test*.py'
+        - '**/*spec*.ts'
+        - '**/tests/**'
+
+# Refactoring
+refactor:
+  - head-branch: ['refactor/*', 'rename/*']
+
+# CI/CD
+ci:
+  - any:
+    - head-branch: ['ci/*']
+    - changed-files:
+      - any-glob-to-any-file:
+        - '.github/**'
+        - 'scripts/**'
+        - 'docker/**'
+        - '.dockerignore'
+        - 'docker-compose*.yml'
+        - '.gitlab-ci.yml'
+        - 'Jenkinsfile'
+
+# Configuration
+config:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/*.json'
+      - '**/*.yaml'
+      - '**/*.yml'
+      - '**/*.toml'
+      - '**/*.ini'
+      - '.env*'

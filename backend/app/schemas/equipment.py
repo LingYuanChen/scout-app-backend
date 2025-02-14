@@ -3,25 +3,25 @@ from uuid import UUID
 from sqlmodel import Field, SQLModel
 
 
-class ItemBase(SQLModel):
+class EquipmentBase(SQLModel):
     title: str = Field(min_length=1, max_length=255)
     description: str | None = Field(default=None, max_length=255)
     category: str | None = Field(default=None, max_length=100)
 
 
-class ItemCreate(ItemBase):
+class EquipmentCreate(EquipmentBase):
     pass
 
 
-class ItemUpdate(ItemBase):
+class EquipmentUpdate(EquipmentBase):
     title: str | None = Field(default=None, min_length=1, max_length=255)  # type: ignore
 
 
-class ItemPublic(ItemBase):
+class EquipmentPublic(EquipmentBase):
     id: UUID
     owner_id: UUID
 
 
-class ItemsPublic(SQLModel):
-    data: list[ItemPublic]
+class EquipmentsPublic(SQLModel):
+    data: list[EquipmentPublic]
     count: int
