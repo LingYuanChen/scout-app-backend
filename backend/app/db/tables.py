@@ -92,8 +92,8 @@ class EventMealOption(SQLModel, table=True):
 
 class PackingEquipment(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    event_id: UUID = Field(foreign_key="event.id")
-    equipment_id: UUID = Field(foreign_key="equipment.id")
+    event_id: UUID = Field(foreign_key="event.id", nullable=False)
+    equipment_id: UUID = Field(foreign_key="equipment.id", nullable=False)
     quantity: int = Field(default=1)
     required: bool = Field(default=True)
     notes: str | None = Field(default=None, max_length=255)
