@@ -1,23 +1,60 @@
 name: PR Title Formatter
 
 on:
-  pull_request:
-    types: [opened, edited, synchronize, reopened, labeled, unlabeled]
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+      - labeled
+      - unlabeled
 
 jobs:
-  format_pr_title:
-    needs: [labeler]
+  # Format title immediately
+  format_title:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
       contents: read
-
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+      - name: Format Title
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
 
-      - name: Format PR Title
-        id: format_title
+            const formatTitle = (title) => {
+              if (title.includes('/')) {
+                title = title.split('/').slice(1).join(' ');
+              }
+              title = title.replace(/^[^\w]*/, '').trim();
+              title = title.replace(/[-_]/g, ' ');
+              title = title.toLowerCase();
+              return title.charAt(0).toUpperCase() + title.slice(1);
+            };
+
+            const newTitle = formatTitle(pr.title);
+
+            if (pr.title !== newTitle) {
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                title: newTitle
+              });
+            }
+
+  # Add emoji after labels
+  add_emoji:
+    needs: [format_title, labeler]
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - name: Add Emoji
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -26,18 +63,15 @@ jobs:
             const labels = pr.labels.map(l => l.name);
 
             const labelEmojis = {
-              bug: ['🐛', '🪲', '🔍'],
-              github_actions: ['👷', '🤖', '⚡'],
-              refactor: ['🔧', '♻️', '💡'],
-              enhancement: ['✨', '🌟', '💫'],
-              test: ['🧪', '🔬', '🧮'],
               documentation: ['📚', '📖', '📝'],
+              bug: ['🐛', '🪲', '🔍'],
               dependencies: ['📦', '🔧', '⚙️'],
+              enhancement: ['✨', '🌟', '💫'],
+              github_actions: ['👷', '🤖', '⚡'],
+              test: ['🧪', '🔬', '🧮'],
+              refactor: ['🔧', '♻️', '🏗️'],
               ci: ['⚙️', '🔄', '🛠️'],
-              config: ['⚙️', '🔨', '🛠️'],
-              breaking: ['💥', '🚨', '⚠️'],
-              security: ['🔒', '🛡️', '🔐'],
-              performance: ['⚡️', '🚀', '💨']
+              config: ['⚙️', '🔨', '🛠️']
             };
 
             let emoji = '';
@@ -50,34 +84,16 @@ jobs:
               }
             }
 
-            const formatTitle = (title) => {
-              // If title is from branch name, remove prefix (feat/, fix/, etc.)
-              if (title.includes('/')) {
-                title = title.split('/').slice(1).join(' ');
+            if (emoji) {
+              const currentTitle = pr.title;
+              // Only add emoji if it's not already there
+              if (!currentTitle.match(/^[^\w]*/)) {
+                const newTitle = `${emoji}${currentTitle}`;
+                await github.rest.pulls.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: pr.number,
+                  title: newTitle
+                });
               }
-
-              // Remove any existing emoji and trim
-              title = title.replace(/^[^\w]*/, '').trim();
-
-              // Replace dashes and underscores with spaces
-              title = title.replace(/[-_]/g, ' ');
-
-              // Convert entire title to lowercase first
-              title = title.toLowerCase();
-
-              // Capitalize only the first letter of the entire title
-              return title.charAt(0).toUpperCase() + title.slice(1);
-            };
-
-            const newTitle = `${emoji}${formatTitle(pr.title)}`;
-
-            if (pr.title !== newTitle) {
-              await github.rest.pulls.update({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: pr.number,
-                title: newTitle
-              });
             }
-
-            core.setOutput('formatted-title', newTitle);
