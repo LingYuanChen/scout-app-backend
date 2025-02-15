@@ -3,15 +3,9 @@ name: PR Title Formatter
 on:
   pull_request_target:
     types:
-      - opened
-      - edited
-      - synchronize
-      - reopened
       - labeled
-      - unlabeled
 
 jobs:
-  # Format title immediately
   format_title:
     runs-on: ubuntu-latest
     permissions:
@@ -35,31 +29,6 @@ jobs:
               return title.charAt(0).toUpperCase() + title.slice(1);
             };
 
-            const newTitle = formatTitle(pr.title);
-
-            if (pr.title !== newTitle) {
-              await github.rest.pulls.update({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: pr.number,
-                title: newTitle
-              });
-            }
-
-  # Add emoji after labels
-  add_emoji:
-    needs: [format_title, labeler]
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-      contents: read
-    steps:
-      - name: Add Emoji
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const pr = context.payload.pull_request;
             const labels = pr.labels.map(l => l.name);
 
             const labelEmojis = {
@@ -84,16 +53,13 @@ jobs:
               }
             }
 
-            if (emoji) {
-              const currentTitle = pr.title;
-              // Only add emoji if it's not already there
-              if (!currentTitle.match(/^[^\w]*/)) {
-                const newTitle = `${emoji}${currentTitle}`;
-                await github.rest.pulls.update({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  pull_number: pr.number,
-                  title: newTitle
-                });
-              }
+            const newTitle = `${emoji}${formatTitle(pr.title)}`;
+
+            if (pr.title !== newTitle) {
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                title: newTitle
+              });
             }
