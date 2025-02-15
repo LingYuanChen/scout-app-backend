@@ -6,6 +6,7 @@ on:
 
 jobs:
   format_pr_title:
+    needs: [labeler]
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
