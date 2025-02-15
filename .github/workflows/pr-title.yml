@@ -5,11 +5,21 @@ on:
     types: [opened, edited, synchronize, reopened, labeled, unlabeled]
 
 jobs:
-  format-title:
+  format_pr_title:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
     steps:
-      - uses: actions/github-script@v7
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Format PR Title
+        id: format_title
+        uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.PROJECT_ACCESS_TOKEN }}
           script: |
             const pr = context.payload.pull_request;
             const labels = pr.labels.map(l => l.name);
@@ -22,7 +32,7 @@ jobs:
               'dependencies': ['📦', '🔧', '⚙️'],
               'github_actions': ['👷', '🤖', '⚡'],
               'test': ['🧪', '🔬', '🧮'],
-              'refactor': ['🔧', '♻️', '💡'],
+              'refactor': ['🔧', '♻️', '🏗️'],
               'ci': ['⚙️', '🔄', '🛠️'],
               'config': ['⚙️', '🔨', '🛠️'],
               'breaking': ['💥', '🚨', '⚠️'],
@@ -35,7 +45,6 @@ jobs:
             for (const label of labels) {
               const labelEmoji = labelEmojis[label.toLowerCase()];
               if (labelEmoji) {
-                // Randomly select one emoji from the array
                 const randomIndex = Math.floor(Math.random() * labelEmoji.length);
                 emoji = labelEmoji[randomIndex] + ' ';
                 break;
@@ -44,20 +53,14 @@ jobs:
 
             // Format title with proper capitalization
             const formatTitle = (title) => {
-              // Remove any existing emoji
               title = title.replace(/^[^\w]*/, '').trim();
-
-              // Split by spaces
               const words = title.split(' ');
 
-              // Capitalize first word and rest of the words
               const formattedWords = words.map((word, index) => {
-                // For the type prefix (feat:, fix:, etc.)
                 if (index === 0 && word.includes(':')) {
                   const [type, ...rest] = word.split(':');
                   return `${type.toLowerCase()}:${rest.join(':')}`;
                 }
-                // Capitalize first letter of each word
                 return word.charAt(0).toUpperCase() + word.slice(1);
               });
 
@@ -76,3 +79,6 @@ jobs:
                 title: newTitle
               });
             }
+
+            // Set output for logging
+            core.setOutput('formatted-title', newTitle);
