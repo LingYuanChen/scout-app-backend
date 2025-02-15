@@ -4,6 +4,9 @@ on:
   pull_request_target:
     types:
       - labeled
+      - opened
+      - synchronize
+      - reopened
 
 jobs:
   format_title:
@@ -32,13 +35,13 @@ jobs:
             const labels = pr.labels.map(l => l.name);
 
             const labelEmojis = {
-              documentation: ['📚', '📖', '📝'],
               bug: ['🐛', '🪲', '🔍'],
+              github_actions: ['👷', '🤖', '⚡'],
+              refactor: ['🔧', '♻️', '💡'],
               dependencies: ['📦', '🔧', '⚙️'],
               enhancement: ['✨', '🌟', '💫'],
-              github_actions: ['👷', '🤖', '⚡'],
               test: ['🧪', '🔬', '🧮'],
-              refactor: ['🔧', '♻️', '🏗️'],
+              documentation: ['📚', '📖', '📝'],
               ci: ['⚙️', '🔄', '🛠️'],
               config: ['⚙️', '🔨', '🛠️']
             };
