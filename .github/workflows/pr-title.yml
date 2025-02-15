@@ -42,11 +42,30 @@ jobs:
               }
             }
 
-            // Get current title without emoji
-            let title = pr.title.replace(/^[^\w]*/, '').trim();
+            // Format title with proper capitalization
+            const formatTitle = (title) => {
+              // Remove any existing emoji
+              title = title.replace(/^[^\w]*/, '').trim();
 
-            // Create new title with emoji
-            const newTitle = `${emoji}${title}`;
+              // Split by spaces
+              const words = title.split(' ');
+
+              // Capitalize first word and rest of the words
+              const formattedWords = words.map((word, index) => {
+                // For the type prefix (feat:, fix:, etc.)
+                if (index === 0 && word.includes(':')) {
+                  const [type, ...rest] = word.split(':');
+                  return `${type.toLowerCase()}:${rest.join(':')}`;
+                }
+                // Capitalize first letter of each word
+                return word.charAt(0).toUpperCase() + word.slice(1);
+              });
+
+              return formattedWords.join(' ');
+            };
+
+            // Create new title with emoji and proper capitalization
+            const newTitle = `${emoji}${formatTitle(pr.title)}`;
 
             // Update if different
             if (pr.title !== newTitle) {
