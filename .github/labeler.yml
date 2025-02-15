@@ -1,3 +1,24 @@
+# Bug fixes
+bug:
+  - head-branch: ['fix/*', 'bug/*', 'hotfix/*']
+
+# GitHub Actions
+github_actions:
+  - any:
+    - head-branch: ['action/*', 'workflow/*']
+    - changed-files:
+      - any-glob-to-any-file:
+        - '.github/workflows/**'
+        - '.github/actions/**'
+
+# Enhancements/Features
+enhancement:
+  - head-branch: ['feat/*', 'feature/*', 'enhance/*', 'enhancement/*']
+
+# Refactoring
+refactor:
+  - head-branch: ['refactor/*', 'rename/*']
+
 # Documentation
 documentation:
   - any:
@@ -7,10 +28,6 @@ documentation:
         - any-glob-to-any-file:
           - '**/*.md'
           - 'docs/**'
-
-# Bug fixes
-bug:
-  - head-branch: ['fix/*', 'bug/*', 'hotfix/*']
 
 # Dependencies
 dependencies:
@@ -24,19 +41,6 @@ dependencies:
         - 'poetry.lock'
         - 'pyproject.toml'
 
-# Enhancements/Features
-enhancement:
-  - head-branch: ['feat/*', 'feature/*', 'enhance/*', 'enhancement/*']
-
-# GitHub Actions
-github_actions:
-  - any:
-    - head-branch: ['action/*', 'workflow/*']
-    - changed-files:
-      - any-glob-to-any-file:
-        - '.github/workflows/**'
-        - '.github/actions/**'
-
 # Testing
 test:
   - any:
@@ -46,10 +50,6 @@ test:
         - '**/*test*.py'
         - '**/*spec*.ts'
         - '**/tests/**'
-
-# Refactoring
-refactor:
-  - head-branch: ['refactor/*', 'rename/*']
 
 # CI/CD
 ci:

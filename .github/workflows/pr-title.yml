@@ -1,0 +1,83 @@
+name: PR Title Formatter
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, labeled, unlabeled]
+
+jobs:
+  format_pr_title:
+    needs: [labeler]
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Format PR Title
+        id: format_title
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const labels = pr.labels.map(l => l.name);
+
+            const labelEmojis = {
+              bug: ['🐛', '🪲', '🔍'],
+              github_actions: ['👷', '🤖', '⚡'],
+              refactor: ['🔧', '♻️', '💡'],
+              enhancement: ['✨', '🌟', '💫'],
+              test: ['🧪', '🔬', '🧮'],
+              documentation: ['📚', '📖', '📝'],
+              dependencies: ['📦', '🔧', '⚙️'],
+              ci: ['⚙️', '🔄', '🛠️'],
+              config: ['⚙️', '🔨', '🛠️'],
+              breaking: ['💥', '🚨', '⚠️'],
+              security: ['🔒', '🛡️', '🔐'],
+              performance: ['⚡️', '🚀', '💨']
+            };
+
+            let emoji = '';
+            for (const label of labels) {
+              const labelEmoji = labelEmojis[label.toLowerCase()];
+              if (labelEmoji) {
+                const randomIndex = Math.floor(Math.random() * labelEmoji.length);
+                emoji = labelEmoji[randomIndex] + ' ';
+                break;
+              }
+            }
+
+            const formatTitle = (title) => {
+              // If title is from branch name, remove prefix (feat/, fix/, etc.)
+              if (title.includes('/')) {
+                title = title.split('/').slice(1).join(' ');
+              }
+
+              // Remove any existing emoji and trim
+              title = title.replace(/^[^\w]*/, '').trim();
+
+              // Replace dashes and underscores with spaces
+              title = title.replace(/[-_]/g, ' ');
+
+              // Convert entire title to lowercase first
+              title = title.toLowerCase();
+
+              // Capitalize only the first letter of the entire title
+              return title.charAt(0).toUpperCase() + title.slice(1);
+            };
+
+            const newTitle = `${emoji}${formatTitle(pr.title)}`;
+
+            if (pr.title !== newTitle) {
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                title: newTitle
+              });
+            }
+
+            core.setOutput('formatted-title', newTitle);
