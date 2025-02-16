@@ -29,5 +29,5 @@ jobs:
     steps:
       - uses: docker://agilepathway/pull-request-label-checker:latest
         with:
-          one_of: documentation,bug,dependencies,enhancement,github_actions,test,refactor,ci,config
+          any_of: documentation,bug,dependencies,enhancement,github_actions,test,refactor,ci,config
           repo_token: ${{ secrets.PROJECT_ACCESS_TOKEN }}
