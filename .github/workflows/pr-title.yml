@@ -2,7 +2,7 @@ name: PR Title Formatter
 
 on:
   workflow_run:
-    workflows: ["Labels"]
+    workflows: [Labels]
     types: [completed]
 
 jobs:
