@@ -1,14 +1,12 @@
 name: PR Title Formatter
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, labeled, unlabeled]
+  workflow_run:
+    workflows: [labels]
+    types: [completed]
 
 jobs:
   format_title:
-    needs:
-      - labeler
-      - check-labels
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
