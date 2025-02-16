@@ -29,5 +29,65 @@ jobs:
     steps:
       - uses: docker://agilepathway/pull-request-label-checker:latest
         with:
-          one_of: documentation,bug,dependencies,enhancement,github_actions,test,refactor,ci,config
+          any_of: documentation,bug,dependencies,enhancement,github_actions,test,refactor,ci,config
           repo_token: ${{ secrets.PROJECT_ACCESS_TOKEN }}
+
+  format_title:
+    needs:
+      - labeler
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - name: Format Title
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PROJECT_ACCESS_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+
+            const formatTitle = (title) => {
+              if (title.includes('/')) {
+                title = title.split('/').slice(1).join(' ');
+              }
+              title = title.replace(/^[^\w]*/, '').trim();
+              title = title.replace(/[-_]/g, ' ');
+              title = title.toLowerCase();
+              return title.charAt(0).toUpperCase() + title.slice(1);
+            };
+
+            const labels = pr.labels.map(l => l.name);
+
+            const labelEmojis = {
+              bug: ['🐛', '🪲', '🔍'],
+              github_actions: ['👷', '🤖', '⚡'],
+              refactor: ['🔧', '♻️', '💡'],
+              dependencies: ['📦', '🔧', '⚙️'],
+              enhancement: ['✨', '🌟', '💫'],
+              test: ['🧪', '🔬', '🧮'],
+              documentation: ['📚', '📖', '📝'],
+              ci: ['⚙️', '🔄', '🛠️'],
+              config: ['⚙️', '🔨', '🛠️']
+            };
+
+            let emoji = '';
+            for (const label of labels) {
+              const labelEmoji = labelEmojis[label.toLowerCase()];
+              if (labelEmoji) {
+                const randomIndex = Math.floor(Math.random() * labelEmoji.length);
+                emoji = labelEmoji[randomIndex] + ' ';
+                break;
+              }
+            }
+
+            const newTitle = `${emoji}${formatTitle(pr.title)}`;
+
+            if (pr.title !== newTitle) {
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                title: newTitle
+              });
+            }
