@@ -1,24 +1,29 @@
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import select
 
-from app.api.deps import CurrentUser, SessionDep
+from app.api.deps import (
+    MealDataDep,
+    SessionDep,
+    get_current_staff,
+    get_current_teacher,
+)
 from app.db import Meal
 from app.schemas import (
-    MealCreate,
     MealPublic,
-    MealUpdate,
 )
 
 router = APIRouter(prefix="/meals", tags=["meals"])
 
 
-@router.post("/", response_model=MealPublic)
-def create_meal(
-    *, session: SessionDep, current_user: CurrentUser, meal_in: MealCreate
-) -> Any:
+@router.post(
+    "/",
+    dependencies=[Depends(get_current_teacher)],
+    response_model=MealPublic,
+)
+def create_meal(*, session: SessionDep, meal_in: MealDataDep) -> Any:
     """
     Create new meal. Only teachers and superusers can create meals.
 
@@ -32,25 +37,21 @@ def create_meal(
         "calories": 650
     }    ```
     """
-    if not current_user.is_superuser and current_user.role != "teacher":
-        raise HTTPException(status_code=403, detail="Only teachers can create meals")
-
-    meal = Meal(**meal_in.model_dump(), created_by_id=current_user.id)
+    meal = Meal(**meal_in.model_dump())
     session.add(meal)
     session.commit()
     session.refresh(meal)
     return meal
 
 
-@router.get("/", response_model=list[MealPublic])
-def read_meals(
-    session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
-) -> Any:
+@router.get(
+    "/",
+    dependencies=[Depends(get_current_staff)],
+    response_model=list[MealPublic],
+)
+def read_meals(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
     """Retrieve meals."""
-    if current_user.role != "superuser" and current_user.role != "teacher":
-        raise HTTPException(
-            status_code=403, detail="You are not authorized to view meals"
-        )
+
     statement = select(Meal).offset(skip).limit(limit)
     meals = session.exec(statement).all()
     return meals
@@ -65,20 +66,21 @@ def read_meal(session: SessionDep, id: UUID) -> Any:
     return meal
 
 
-@router.put("/{id}", response_model=MealPublic)
+@router.put(
+    "/{id}",
+    dependencies=[Depends(get_current_teacher)],
+    response_model=MealPublic,
+)
 def update_meal(
     *,
     session: SessionDep,
-    current_user: CurrentUser,
     id: UUID,
-    meal_in: MealUpdate,
+    meal_in: MealDataDep,
 ) -> Any:
     """Update a meal."""
     meal = session.get(Meal, id)
     if not meal:
         raise HTTPException(status_code=404, detail="Meal not found")
-    if current_user.role != "superuser" and current_user.role != "teacher":
-        raise HTTPException(status_code=403, detail="Not enough permissions")
 
     update_data = meal_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
@@ -90,19 +92,19 @@ def update_meal(
     return meal
 
 
-@router.delete("/{id}")
+@router.delete(
+    "/{id}",
+    dependencies=[Depends(get_current_teacher)],
+)
 def delete_meal(
     *,
     session: SessionDep,
-    current_user: CurrentUser,
     id: UUID,
 ) -> Any:
     """Delete a meal."""
     meal = session.get(Meal, id)
     if not meal:
         raise HTTPException(status_code=404, detail="Meal not found")
-    if current_user.role != "superuser" and current_user.role != "teacher":
-        raise HTTPException(status_code=403, detail="Not enough permissions")
 
     session.delete(meal)
     session.commit()

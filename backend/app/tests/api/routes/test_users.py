@@ -19,7 +19,7 @@ def test_get_users_superuser_me(
     current_user = r.json()
     assert current_user
     assert current_user["is_active"] is True
-    assert current_user["is_superuser"]
+    assert current_user["role_type"] == "admin"
     assert current_user["email"] == settings.FIRST_SUPERUSER
 
 
@@ -30,7 +30,7 @@ def test_get_users_teacher_user_me(
     current_user = r.json()
     assert current_user
     assert current_user["is_active"] is True
-    assert current_user["is_superuser"] is False
+    assert current_user["role_type"] == "teacher"
     assert current_user["email"] == settings.EMAIL_TEST_TEACHER
 
 
@@ -41,8 +41,19 @@ def test_get_users_student_user_me(
     current_user = r.json()
     assert current_user
     assert current_user["is_active"] is True
-    assert current_user["is_superuser"] is False
+    assert current_user["role_type"] == "student"
     assert current_user["email"] == settings.EMAIL_TEST_STUDENT
+
+
+def test_get_users_staff_user_me(
+    client: TestClient, staff_token_headers: dict[str, str]
+) -> None:
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=staff_token_headers)
+    current_user = r.json()
+    assert current_user
+    assert current_user["is_active"] is True
+    assert current_user["role_type"] == "staff"
+    assert current_user["email"] == settings.EMAIL_TEST_STAFF
 
 
 def test_create_user_new_email(
@@ -434,7 +445,7 @@ def test_delete_user_me_as_superuser(
     )
     assert r.status_code == 403
     response = r.json()
-    assert response["detail"] == "Super users are not allowed to delete themselves"
+    assert response["detail"] == "Admins are not allowed to delete themselves"
 
 
 def test_delete_user_super_user(
@@ -479,7 +490,7 @@ def test_delete_user_current_super_user_error(
         headers=superuser_token_headers,
     )
     assert r.status_code == 403
-    assert r.json()["detail"] == "Super users are not allowed to delete themselves"
+    assert r.json()["detail"] == "Admins are not allowed to delete themselves"
 
 
 def test_delete_user_without_privileges(
@@ -495,4 +506,134 @@ def test_delete_user_without_privileges(
         headers=student_token_headers,
     )
     assert r.status_code == 403
-    assert r.json()["detail"] == "The user doesn't have enough privileges"
+    assert r.json()["detail"] == "Only admins can access this resource"
+
+
+def test_update_user_role_type(
+    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+) -> None:
+    """Test updating a user's role type"""
+    username = random_email()
+    password = random_lower_string()
+    user_in = UserCreate(email=username, password=password)
+    user = crud.create_user(session=db, user_create=user_in)
+
+    data = {"role_type": "teacher"}
+    r = client.patch(
+        f"{settings.API_V1_STR}/users/{user.id}",
+        headers=superuser_token_headers,
+        json=data,
+    )
+    assert r.status_code == 200
+    updated_user = r.json()
+
+    assert updated_user["role_type"] == "teacher"
+
+    user_query = select(User).where(User.email == username)
+    user_db = db.exec(user_query).first()
+    db.refresh(user_db)
+    assert user_db
+    assert user_db.role_type.value == "teacher"
+
+
+def test_update_user_multiple_fields(
+    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+) -> None:
+    """Test updating multiple user fields at once"""
+    username = random_email()
+    password = random_lower_string()
+    user_in = UserCreate(email=username, password=password)
+    user = crud.create_user(session=db, user_create=user_in)
+
+    new_email = random_email()
+    data = {
+        "email": new_email,
+        "full_name": "New Name",
+        "role_type": "teacher",
+    }
+    r = client.patch(
+        f"{settings.API_V1_STR}/users/{user.id}",
+        headers=superuser_token_headers,
+        json=data,
+    )
+    assert r.status_code == 200
+    updated_user = r.json()
+
+    # Query by ID instead of email since email has changed
+    user_query = select(User).where(User.id == user.id)
+    user_db = db.exec(user_query).first()
+    db.refresh(user_db)
+
+    assert user_db
+    assert user_db.email == new_email
+    assert user_db.full_name == "New Name"
+    assert user_db.role_type.value == "teacher"
+
+    # Verify the response matches the database
+    assert updated_user["email"] == user_db.email
+    assert updated_user["full_name"] == user_db.full_name
+    assert updated_user["role_type"] == user_db.role_type.value
+
+
+def test_update_user_non_admin(
+    client: TestClient, student_token_headers: dict[str, str], db: Session
+) -> None:
+    """Test that non-admin users cannot update other users"""
+    username = random_email()
+    password = random_lower_string()
+    user_in = UserCreate(email=username, password=password)
+    user = crud.create_user(session=db, user_create=user_in)
+
+    data = {"full_name": "Updated Name"}
+    r = client.patch(
+        f"{settings.API_V1_STR}/users/{user.id}",
+        headers=student_token_headers,
+        json=data,
+    )
+    assert r.status_code == 403
+    assert r.json()["detail"] == "Only admins can access this resource"
+
+
+def test_update_user_invalid_role(
+    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+) -> None:
+    """Test updating a user with an invalid role type"""
+    username = random_email()
+    password = random_lower_string()
+    user_in = UserCreate(email=username, password=password)
+    user = crud.create_user(session=db, user_create=user_in)
+
+    data = {"role_type": "INVALID_ROLE"}
+    r = client.patch(
+        f"{settings.API_V1_STR}/users/{user.id}",
+        headers=superuser_token_headers,
+        json=data,
+    )
+    assert r.status_code == 422  # Validation error
+
+
+def test_update_user_to_staff(
+    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+) -> None:
+    """Test updating a user's role type to staff"""
+    username = random_email()
+    password = random_lower_string()
+    user_in = UserCreate(email=username, password=password)
+    user = crud.create_user(session=db, user_create=user_in)
+
+    data = {"role_type": "staff"}
+    r = client.patch(
+        f"{settings.API_V1_STR}/users/{user.id}",
+        headers=superuser_token_headers,
+        json=data,
+    )
+    assert r.status_code == 200
+    updated_user = r.json()
+
+    assert updated_user["role_type"] == "staff"
+
+    user_query = select(User).where(User.id == user.id)
+    user_db = db.exec(user_query).first()
+    db.refresh(user_db)
+    assert user_db
+    assert user_db.role_type.value == "staff"

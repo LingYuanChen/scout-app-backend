@@ -10,25 +10,18 @@ from app.db import (
     MealChoice,
     MealType,
 )
-from app.tests.utils.user import (
-    create_random_teacher,
-)
 from app.tests.utils.utils import random_lower_string
 
 
-def create_random_meal(db: Session, *, created_by_id: uuid.UUID | None = None) -> Meal:
-    if created_by_id is None:
-        user = create_random_teacher(db)
-        created_by_id = user.id
-
+def create_random_meal(db: Session) -> Meal:
     meal = Meal(
         name=random_lower_string(),
+        restaurant=random_lower_string(),
         description=random_lower_string(),
         price=15.50,
         is_vegetarian=False,
         is_beef=True,
         calories=650,
-        created_by_id=created_by_id,
     )
     db.add(meal)
     db.commit()

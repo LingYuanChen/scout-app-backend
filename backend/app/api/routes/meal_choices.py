@@ -10,6 +10,7 @@ from app.db import (
     EventMealOption,
     MealChoice,
 )
+from app.db.enums import RoleType
 from app.schemas import (
     MealChoiceCreate,
     MealChoiceUpdate,
@@ -80,10 +81,14 @@ def update_meal_choice(
     if not meal_choice:
         raise HTTPException(status_code=404, detail="Meal choice not found")
 
-    # Verify ownership
-    attendance = session.get(Attendance, meal_choice.attendance_id)
-    if not attendance or attendance.user_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
+    # Admin can edit any meal choice
+    if current_user.role_type == RoleType.ADMIN:
+        pass  # Allow admin to proceed
+    else:
+        # Others must verify ownership
+        attendance = session.get(Attendance, meal_choice.attendance_id)
+        if not attendance or attendance.user_id != current_user.id:
+            raise HTTPException(status_code=403, detail="Not enough permissions")
 
     # TODO: Verify meal option exists
     if meal_choice_in.event_meal_option_id is not None:

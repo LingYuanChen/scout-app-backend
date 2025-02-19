@@ -61,10 +61,8 @@ def authenticate(*, session: Session, email: str, password: str) -> User | None:
     return db_user
 
 
-def create_equipment(
-    *, session: Session, equipment_in: EquipmentCreate, owner_id: uuid.UUID
-) -> Equipment:
-    db_equipment = Equipment.model_validate(equipment_in, update={"owner_id": owner_id})
+def create_equipment(*, session: Session, equipment_in: EquipmentCreate) -> Equipment:
+    db_equipment = Equipment.model_validate(equipment_in)
     session.add(db_equipment)
     session.commit()
     session.refresh(db_equipment)

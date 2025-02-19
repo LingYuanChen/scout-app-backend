@@ -1,4 +1,3 @@
-from datetime import datetime
 from uuid import UUID
 
 from sqlmodel import SQLModel
@@ -6,6 +5,7 @@ from sqlmodel import SQLModel
 
 class MealBase(SQLModel):
     name: str
+    restaurant: str
     description: str | None = None
     price: float | None = None
     is_vegetarian: bool = False
@@ -28,5 +28,3 @@ class MealUpdate(SQLModel):
 
 class MealPublic(MealBase):
     id: UUID
-    created_at: datetime
-    created_by_id: UUID

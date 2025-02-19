@@ -19,7 +19,6 @@ class EquipmentUpdate(EquipmentBase):
 
 class EquipmentPublic(EquipmentBase):
     id: UUID
-    owner_id: UUID
 
 
 class EquipmentsPublic(SQLModel):
