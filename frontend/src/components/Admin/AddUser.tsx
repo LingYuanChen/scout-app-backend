@@ -48,8 +48,8 @@ const AddUser = ({ isOpen, onClose }: AddUserProps) => {
       full_name: "",
       password: "",
       confirm_password: "",
-      is_superuser: false,
       is_active: false,
+      role: "admin",
     },
   })
 
@@ -156,7 +156,7 @@ const AddUser = ({ isOpen, onClose }: AddUserProps) => {
             </FormControl>
             <Flex mt={4}>
               <FormControl>
-                <Checkbox {...register("is_superuser")} colorScheme="teal">
+                <Checkbox {...register("role")} colorScheme="teal">
                   Is superuser?
                 </Checkbox>
               </FormControl>

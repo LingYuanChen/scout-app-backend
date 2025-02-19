@@ -148,7 +148,7 @@ const EditUser = ({ user, isOpen, onClose }: EditUserProps) => {
             </FormControl>
             <Flex>
               <FormControl mt={4}>
-                <Checkbox {...register("is_superuser")} colorScheme="teal">
+                <Checkbox {...register("role")} colorScheme="teal">
                   Is superuser?
                 </Checkbox>
               </FormControl>
