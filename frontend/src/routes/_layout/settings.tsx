@@ -30,7 +30,7 @@ export const Route = createFileRoute("/_layout/settings")({
 function UserSettings() {
   const queryClient = useQueryClient()
   const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"])
-  const finalTabs = currentUser?.role === "admin"
+  const finalTabs = currentUser?.role_type === "admin"
     ? tabsConfig.slice(0, 3)
     : tabsConfig
 

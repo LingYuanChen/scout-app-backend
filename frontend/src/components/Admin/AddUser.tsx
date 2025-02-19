@@ -31,6 +31,14 @@ interface UserCreateForm extends UserCreate {
   confirm_password: string
 }
 
+export interface UserPublic {
+  id: string;
+  email: string;
+  full_name: string;
+  role_type: string;  // Ensure this matches the backend
+  is_active: boolean;
+}
+
 const AddUser = ({ isOpen, onClose }: AddUserProps) => {
   const queryClient = useQueryClient()
   const showToast = useCustomToast()
@@ -49,7 +57,7 @@ const AddUser = ({ isOpen, onClose }: AddUserProps) => {
       password: "",
       confirm_password: "",
       is_active: false,
-      role: "admin",
+      role_type: "admin",
     },
   })
 
@@ -156,7 +164,7 @@ const AddUser = ({ isOpen, onClose }: AddUserProps) => {
             </FormControl>
             <Flex mt={4}>
               <FormControl>
-                <Checkbox {...register("role")} colorScheme="teal">
+                <Checkbox {...register("role_type")} colorScheme="teal">
                   Is superuser?
                 </Checkbox>
               </FormControl>
