@@ -16,6 +16,7 @@ from app.db import (
     PackingEquipment,
     User,
 )
+from app.db.enums import RoleType
 from app.main import app
 from app.tests.utils.user import authentication_token_from_email
 from app.tests.utils.utils import get_superuser_token_headers
@@ -59,7 +60,7 @@ def superuser_token_headers(client: TestClient) -> dict[str, str]:
 def teacher_token_headers(client: TestClient, db: Session) -> dict[str, str]:
     """Return a valid token for teacher user"""
     return authentication_token_from_email(
-        client=client, email=settings.EMAIL_TEST_TEACHER, db=db, role="teacher"
+        client=client, email=settings.EMAIL_TEST_TEACHER, db=db, role=RoleType.TEACHER
     )
 
 
@@ -67,7 +68,17 @@ def teacher_token_headers(client: TestClient, db: Session) -> dict[str, str]:
 def student_token_headers(client: TestClient, db: Session) -> dict[str, str]:
     """Return a valid token for student user"""
     return authentication_token_from_email(
-        client=client, email=settings.EMAIL_TEST_STUDENT, db=db, role="student"
+        client=client, email=settings.EMAIL_TEST_STUDENT, db=db, role=RoleType.STUDENT
+    )
+
+
+@pytest.fixture(scope="module")
+def staff_token_headers(client: TestClient, db: Session) -> dict[str, str]:
+    """
+    Returns a valid token for staff user
+    """
+    return authentication_token_from_email(
+        client=client, email=settings.EMAIL_TEST_STAFF, db=db, role=RoleType.STAFF
     )
 
 

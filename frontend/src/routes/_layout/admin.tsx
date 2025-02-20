@@ -111,7 +111,7 @@ function UsersTable() {
                   <Td isTruncated maxWidth="150px">
                     {user.email}
                   </Td>
-                  <Td>{user.is_superuser ? "Superuser" : "User"}</Td>
+                  <Td>{user.role_type === "admin" ? "Admin" : "User"}</Td>
                   <Td>
                     <Flex gap={2}>
                       <Box

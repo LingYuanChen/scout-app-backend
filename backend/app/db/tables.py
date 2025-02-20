@@ -1,17 +1,10 @@
 import uuid
 from datetime import datetime
-from enum import Enum
 from uuid import UUID
 
 from sqlmodel import Field, Relationship, SQLModel
 
-
-class MealType(str, Enum):
-    BREAKFAST = "breakfast"
-    LUNCH = "lunch"
-    DINNER = "dinner"
-    SNACK = "snack"
-    LATE_NIGHT = "late_night"
+from .enums import MealType, RoleType
 
 
 class User(SQLModel, table=True):
@@ -19,25 +12,23 @@ class User(SQLModel, table=True):
     email: str = Field(unique=True, index=True, max_length=255)
     hashed_password: str
     is_active: bool = True
-    is_superuser: bool = False
     full_name: str | None = Field(default=None, max_length=255)
-    role: str = Field(default="student")  # "superuser", "teacher", "student"
+    role_type: RoleType = Field(default=RoleType.STUDENT)
 
-    equipments: list["Equipment"] = Relationship(
-        back_populates="owner", cascade_delete=True
-    )
     attendances: list["Attendance"] = Relationship(back_populates="user")
-    created_events: list["Event"] = Relationship(back_populates="created_by")
+    coordinated_events: list["Event"] = Relationship(
+        back_populates="coordinator",
+        sa_relationship_kwargs={"foreign_keys": "[Event.coordinator_id]"},
+    )
 
 
 class Equipment(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     title: str = Field(min_length=1, max_length=255)
     description: str | None = Field(default=None, max_length=255)
-    category: str | None = Field(default=None, max_length=100)
-    owner_id: UUID = Field(foreign_key="user.id")
+    category: str = Field(default=None, max_length=100)
+    location: str = Field(default=None, max_length=100)
 
-    owner: User = Relationship(back_populates="equipments")
     event_equipments: list["PackingEquipment"] = Relationship(
         back_populates="equipment"
     )
@@ -49,9 +40,12 @@ class Event(SQLModel, table=True):
     description: str | None = Field(default=None, max_length=1000)
     start_date: str = Field(max_length=10)  # Format: YYYY-MM-DD
     end_date: str = Field(max_length=10)
-    created_by_id: UUID = Field(foreign_key="user.id", nullable=False)
+    coordinator_id: UUID = Field(foreign_key="user.id", nullable=True)
 
-    created_by: User = Relationship(back_populates="created_events")
+    coordinator: User = Relationship(
+        back_populates="coordinated_events",
+        sa_relationship_kwargs={"foreign_keys": "[Event.coordinator_id]"},
+    )
     attendees: list["Attendance"] = Relationship(
         back_populates="event", cascade_delete=True
     )
@@ -66,14 +60,12 @@ class Event(SQLModel, table=True):
 class Meal(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     name: str
+    restaurant: str
     description: str | None = None
     price: float | None = None
     is_vegetarian: bool = False
     is_beef: bool = False
     calories: int | None = None
-    created_by_id: UUID = Field(foreign_key="user.id")
-    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
-
     event_meal_options: list["EventMealOption"] = Relationship(back_populates="meal")
 
 
@@ -108,8 +100,6 @@ class MealChoice(SQLModel, table=True):
     event_meal_option_id: UUID = Field(foreign_key="eventmealoption.id")
     quantity: int = 1
     notes: str | None = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
 
     attendance: "Attendance" = Relationship(back_populates="meal_choices")
     event_meal_option: EventMealOption = Relationship(back_populates="meal_choices")

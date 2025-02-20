@@ -4,36 +4,34 @@ from sqlmodel import Session, select
 
 from app.db import Equipment, Event, PackingEquipment
 from app.tests.utils.equipment import create_random_equipment
-from app.tests.utils.user import (
-    create_random_teacher,
-)
+from app.tests.utils.user import create_random_staff
 from app.tests.utils.utils import random_lower_string
 
 
 def create_random_event(
     db: Session,
     *,
-    created_by_id: uuid.UUID | None = None,
+    coordinator_id: uuid.UUID | None = None,
     packing_equipment_count: int = 0,
 ) -> Event:
     """Create a random event with optional packing items.
 
     Args:
         db: Database session
-        created_by_id: Optional ID of the creator (teacher)
+        coordinator_id: Event coordinator
         packing_items_count: Number of packing items to create/attach
             If > 0, will try to use existing items first, then create new ones if needed
     """
-    if created_by_id is None:
-        user = create_random_teacher(db)
-        created_by_id = user.id
+    if coordinator_id is None:
+        user = create_random_staff(db)
+        coordinator_id = user.id
 
     event = Event(
         name=random_lower_string(),
         description=random_lower_string(),
         start_date="2024-07-01",
         end_date="2024-07-05",
-        created_by_id=created_by_id,
+        coordinator_id=coordinator_id,
     )
     db.add(event)
     db.commit()

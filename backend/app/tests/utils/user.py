@@ -6,11 +6,12 @@ from sqlmodel import Session
 from app import crud
 from app.core.config import settings
 from app.db import User
+from app.db.enums import RoleType
 from app.schemas import UserCreate, UserUpdate
 from app.tests.utils.utils import random_email, random_lower_string
 
 # Define valid role types
-UserRole = Literal["superuser", "teacher", "student"]
+UserRole = Literal["admin", "teacher", "staff", "student"]
 
 
 def user_authentication_headers(
@@ -28,7 +29,7 @@ def user_authentication_headers(
 def create_random_user(
     db: Session,
     *,
-    role: UserRole = "student",
+    role: RoleType = RoleType.STUDENT,
     is_active: bool = True,
 ) -> User:
     """Create a random user with specified role.
@@ -47,9 +48,8 @@ def create_random_user(
     user_in = UserCreate(
         email=email,
         password=password,
-        is_superuser=(role == "superuser"),
         is_active=is_active,
-        role=role,
+        role_type=role,
     )
     user = crud.create_user(session=db, user_create=user_in)
     return user
@@ -60,7 +60,7 @@ def authentication_token_from_email(
     client: TestClient,
     email: str,
     db: Session,
-    role: UserRole = "student",
+    role: RoleType = RoleType.STUDENT,
     is_active: bool = True,
 ) -> dict[str, str]:
     """
@@ -80,9 +80,8 @@ def authentication_token_from_email(
         user_in_create = UserCreate(
             email=email,
             password=password,
-            is_superuser=(role == "superuser"),
             is_active=is_active,
-            role=role,
+            role_type=role,
         )
         user = crud.create_user(session=db, user_create=user_in_create)
     else:
@@ -94,14 +93,19 @@ def authentication_token_from_email(
 
 def create_random_superuser(db: Session) -> User:
     """Convenience function to create a superuser"""
-    return create_random_user(db, role="superuser")
+    return create_random_user(db, role=RoleType.ADMIN)
 
 
 def create_random_teacher(db: Session) -> User:
     """Convenience function to create a teacher"""
-    return create_random_user(db, role="teacher")
+    return create_random_user(db, role=RoleType.TEACHER)
+
+
+def create_random_staff(db: Session) -> User:
+    """Convenience function to create a staff"""
+    return create_random_user(db, role=RoleType.STAFF)
 
 
 def create_random_student(db: Session) -> User:
     """Convenience function to create a student"""
-    return create_random_user(db, role="student")
+    return create_random_user(db, role=RoleType.STUDENT)

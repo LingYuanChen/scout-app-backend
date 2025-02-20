@@ -12,15 +12,16 @@ export type Body_login_login_access_token = {
 export type EquipmentCreate = {
   title: string
   description?: string | null
-  category?: string | null
+  category: string
+  location: string
 }
 
 export type EquipmentPublic = {
   title: string
   description?: string | null
-  category?: string | null
+  category: string
+  location: string
   id: string
-  owner_id: string
 }
 
 export type EquipmentsPublic = {
@@ -32,6 +33,7 @@ export type EquipmentUpdate = {
   title?: string | null
   description?: string | null
   category?: string | null
+  location?: string | null
 }
 
 export type EventCreate = {
@@ -39,6 +41,7 @@ export type EventCreate = {
   description?: string | null
   start_date: string
   end_date: string
+  coordinator_id: string | null
   packing_equipments?: Array<PackingEquipmentCreate> | null
   meal_options?: Array<EventMealOptionCreate> | null
 }
@@ -48,6 +51,15 @@ export type EventMealOptionCreate = {
   meal_type: MealType
   day: number
   max_quantity?: number | null
+}
+
+export type EventMealOptionPublic = {
+  meal_id: string
+  meal_type: MealType
+  day: number
+  max_quantity?: number | null
+  id: string
+  meal: MealPublic
 }
 
 export type EventPackingList = {
@@ -61,9 +73,10 @@ export type EventPublic = {
   description?: string | null
   start_date: string
   end_date: string
+  coordinator_id: string | null
   id: string
-  created_by_id: string
   packing_equipments: Array<PackingEquipmentPublic>
+  meal_options: Array<EventMealOptionPublic>
 }
 
 export type EventsPublic = {
@@ -76,7 +89,9 @@ export type EventUpdate = {
   description?: string | null
   start_date?: string | null
   end_date?: string | null
+  coordinator_id: string | null
   packing_equipments?: Array<PackingEquipmentCreate> | null
+  meal_options?: Array<EventMealOptionCreate> | null
 }
 
 export type HTTPValidationError = {
@@ -89,8 +104,6 @@ export type MealChoice = {
   event_meal_option_id: string
   quantity?: number
   notes?: string | null
-  created_at?: string
-  updated_at?: string
 }
 
 export type MealChoiceCreate = {
@@ -108,6 +121,7 @@ export type MealChoiceUpdate = {
 
 export type MealCreate = {
   name: string
+  restaurant: string
   description?: string | null
   price?: number | null
   is_vegetarian?: boolean
@@ -117,14 +131,13 @@ export type MealCreate = {
 
 export type MealPublic = {
   name: string
+  restaurant: string
   description?: string | null
   price?: number | null
   is_vegetarian?: boolean
   is_beef?: boolean
   calories?: number | null
   id: string
-  created_at: string
-  created_by_id: string
 }
 
 export type MealType = "breakfast" | "lunch" | "dinner" | "snack" | "late_night"
@@ -166,6 +179,8 @@ export type PackingEquipmentsPublic = {
   count: number
 }
 
+export type RoleType = "admin" | "teacher" | "staff" | "student"
+
 export type Token = {
   access_token: string
   token_type?: string
@@ -179,18 +194,16 @@ export type UpdatePassword = {
 export type UserCreate = {
   email: string
   is_active?: boolean
-  is_superuser?: boolean
   full_name?: string | null
-  role?: string
+  role_type?: RoleType
   password: string
 }
 
 export type UserPublic = {
   email: string
   is_active?: boolean
-  is_superuser?: boolean
   full_name?: string | null
-  role?: string
+  role_type?: RoleType
   id: string
 }
 
@@ -208,9 +221,8 @@ export type UsersPublic = {
 export type UserUpdate = {
   email?: string | null
   is_active?: boolean
-  is_superuser?: boolean
   full_name?: string | null
-  role?: string
+  role_type?: RoleType
   password?: string | null
 }
 
@@ -322,7 +334,7 @@ export type EventsReadEventsData = {
 export type EventsReadEventsResponse = EventsPublic
 
 export type EventsCreateEventData = {
-  requestBody: EventCreate
+  requestBody: EventCreate | EventUpdate
 }
 
 export type EventsCreateEventResponse = EventPublic
@@ -335,7 +347,7 @@ export type EventsReadEventResponse = EventPublic
 
 export type EventsUpdateEventData = {
   id: string
-  requestBody: EventUpdate
+  requestBody: EventCreate | EventUpdate
 }
 
 export type EventsUpdateEventResponse = EventPublic
@@ -398,7 +410,7 @@ export type MealChoicesDeleteMealChoiceData = {
 export type MealChoicesDeleteMealChoiceResponse = unknown
 
 export type MealsCreateMealData = {
-  requestBody: MealCreate
+  requestBody: MealCreate | MealUpdate
 }
 
 export type MealsCreateMealResponse = MealPublic
@@ -418,7 +430,7 @@ export type MealsReadMealResponse = MealPublic
 
 export type MealsUpdateMealData = {
   id: string
-  requestBody: MealUpdate
+  requestBody: MealCreate | MealUpdate
 }
 
 export type MealsUpdateMealResponse = MealPublic

@@ -1,23 +1,25 @@
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import delete, func, select
 
-from app.api.deps import CurrentUser, SessionDep
+from app.api.deps import (
+    CurrentUser,
+    EventDataDep,
+    SessionDep,
+    get_current_teacher,
+)
 from app.db import (
     Equipment,
     Event,
     EventMealOption,
     Meal,
     PackingEquipment,
-    User,
 )
 from app.schemas import (
-    EventCreate,
     EventPublic,
     EventsPublic,
-    EventUpdate,
 )
 
 router = APIRouter(prefix="/events", tags=["events"])
@@ -39,36 +41,33 @@ def read_events(
 
 
 @router.get("/{id}", response_model=EventPublic)
-def read_event(session: SessionDep, current_user: CurrentUser, id: UUID) -> Any:
+def read_event(
+    session: SessionDep,
+    id: UUID,
+) -> Any:
     """
     Get event by ID.
     """
-    user = session.get(User, current_user.id)
     event = session.get(Event, id)
-    if not user:
-        raise HTTPException(
-            status_code=403, detail="You are not authorized to view this event"
-        )
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
     return event
 
 
-@router.post("/", response_model=EventPublic)
-def create_event(
-    *, session: SessionDep, current_user: CurrentUser, event_in: EventCreate
-) -> Any:
+@router.post(
+    "/",
+    dependencies=[Depends(get_current_teacher)],
+    response_model=EventPublic,
+)
+def create_event(*, session: SessionDep, event_in: EventDataDep) -> Any:
     """
     Create new event with packing Equipments and meal options.
     Only teachers and superusers can create events.
     """
-    if current_user.role != "superuser" and current_user.role != "teacher":
-        raise HTTPException(status_code=403, detail="Only teachers can create events")
 
     # Create event
     event = Event.model_validate(
-        event_in.model_dump(exclude={"packing_equipments", "meal_options"}),
-        update={"created_by_id": current_user.id},
+        event_in.model_dump(exclude={"packing_equipments", "meal_options"})
     )
     session.add(event)
     session.commit()
@@ -115,13 +114,16 @@ def create_event(
     return event
 
 
-@router.put("/{id}", response_model=EventPublic)
+@router.put(
+    "/{id}",
+    dependencies=[Depends(get_current_teacher)],
+    response_model=EventPublic,
+)
 def update_event(
     *,
     session: SessionDep,
-    current_user: CurrentUser,
     id: UUID,
-    event_in: EventUpdate,
+    event_in: EventDataDep,
 ) -> Any:
     """
     Update an event and its packing equipments.
@@ -130,8 +132,6 @@ def update_event(
     event = session.get(Event, id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
-    if current_user.role != "superuser" and current_user.role != "teacher":
-        raise HTTPException(status_code=403, detail="Only teachers can update events")
 
     # Update event basic info
     update_dict = event_in.model_dump(
@@ -170,11 +170,13 @@ def update_event(
     return event
 
 
-@router.delete("/{id}")
+@router.delete(
+    "/{id}",
+    dependencies=[Depends(get_current_teacher)],
+)
 def delete_event(
     *,
     session: SessionDep,
-    current_user: CurrentUser,
     id: UUID,
 ) -> Any:
     """
@@ -183,11 +185,7 @@ def delete_event(
     event = session.get(Event, id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
-    if current_user.role != "superuser" and current_user.role != "teacher":
-        raise HTTPException(status_code=403, detail="Only teachers can delete events")
 
-    # No need to manually delete packing equipments
-    # They will be automatically deleted due to cascade_delete=True
     session.delete(event)
     session.commit()
     return {"message": "Event deleted"}
