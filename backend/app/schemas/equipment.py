@@ -16,8 +16,8 @@ class EquipmentCreate(EquipmentBase):
 
 class EquipmentUpdate(EquipmentBase):
     title: str | None = Field(default=None, min_length=1, max_length=255)  # type: ignore
-    category: str | None = Field(default=None, min_length=1, max_length=100)
-    location: str | None = Field(default=None, min_length=1, max_length=100)
+    category: str | None = Field(default=None, min_length=1, max_length=100)  # type: ignore
+    location: str | None = Field(default=None, min_length=1, max_length=100)  # type: ignore
 
 
 class EquipmentPublic(EquipmentBase):
