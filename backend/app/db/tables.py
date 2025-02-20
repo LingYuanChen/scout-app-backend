@@ -26,7 +26,8 @@ class Equipment(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     title: str = Field(min_length=1, max_length=255)
     description: str | None = Field(default=None, max_length=255)
-    category: str | None = Field(default=None, max_length=100)
+    category: str = Field(default=None, max_length=100)
+    location: str = Field(default=None, max_length=100)
 
     event_equipments: list["PackingEquipment"] = Relationship(
         back_populates="equipment"

@@ -10,7 +10,12 @@ from app.tests.utils.equipment import create_random_equipment
 def test_create_equipment(
     client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
-    data = {"title": "Foo", "description": "Fighters"}
+    data = {
+        "title": "Foo",
+        "description": "Fighters",
+        "category": "Bar",
+        "location": "Baz",
+    }
     response = client.post(
         f"{settings.API_V1_STR}/equipments/",
         headers=superuser_token_headers,
@@ -230,7 +235,14 @@ def test_create_equipment_max_length_title(
     client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
     max_length_title = "A" * 255
-    data = {"title": max_length_title, "description": "Max length title"}
+    max_length_category = "B" * 100
+    max_length_location = "C" * 100
+    data = {
+        "title": max_length_title,
+        "description": "Max length title",
+        "category": max_length_category,
+        "location": max_length_location,
+    }
     response = client.post(
         f"{settings.API_V1_STR}/equipments/",
         headers=superuser_token_headers,
