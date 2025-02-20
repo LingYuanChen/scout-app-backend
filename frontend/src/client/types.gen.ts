@@ -12,13 +12,15 @@ export type Body_login_login_access_token = {
 export type EquipmentCreate = {
   title: string
   description?: string | null
-  category?: string | null
+  category: string
+  location: string
 }
 
 export type EquipmentPublic = {
   title: string
   description?: string | null
-  category?: string | null
+  category: string
+  location: string
   id: string
 }
 
@@ -31,6 +33,7 @@ export type EquipmentUpdate = {
   title?: string | null
   description?: string | null
   category?: string | null
+  location?: string | null
 }
 
 export type EventCreate = {
