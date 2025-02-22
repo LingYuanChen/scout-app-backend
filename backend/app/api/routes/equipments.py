@@ -1,11 +1,16 @@
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import func, select
 
 from app import crud
-from app.api.deps import CurrentUser, EventDep, SessionDep
+from app.api.deps import (
+    CurrentUser,
+    EventDep,
+    SessionDep,
+    get_current_teacher,
+)
 from app.db import Attendance, Equipment, Event, PackingEquipment
 from app.schemas import (
     EquipmentCreate,
@@ -21,19 +26,16 @@ from app.schemas import (
 router = APIRouter(prefix="/equipments", tags=["equipments"])
 
 
-@router.get("/", response_model=EquipmentsPublic)
-def read_equipments(
-    session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
-) -> Any:
+@router.get(
+    "/",
+    dependencies=[Depends(get_current_teacher)],
+    response_model=EquipmentsPublic,
+)
+def read_equipments(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
     """
     Retrieve equipments catalog.
     Only teachers and superusers can access this endpoint.
     """
-    if not current_user.is_superuser and current_user.role != "teacher":
-        raise HTTPException(
-            status_code=403, detail="Only teachers can access the equipments catalog"
-        )
-
     count_statement = select(func.count()).select_from(Equipment)
     count = session.exec(count_statement).one()
     statement = select(Equipment).offset(skip).limit(limit)
@@ -41,46 +43,47 @@ def read_equipments(
     return EquipmentsPublic(data=equipments, count=count)
 
 
-@router.get("/{id}", response_model=EquipmentPublic)
-def read_equipment(session: SessionDep, current_user: CurrentUser, id: UUID) -> Any:
+@router.get(
+    "/{id}",
+    dependencies=[Depends(get_current_teacher)],
+    response_model=EquipmentPublic,
+)
+def read_equipment(session: SessionDep, id: UUID) -> Any:
     """
     Get equipment by ID.
     """
     equipment = session.get(Equipment, id)
     if not equipment:
         raise HTTPException(status_code=404, detail="Equipment not found")
-    if not current_user.is_superuser and (equipment.owner_id != current_user.id):
-        raise HTTPException(status_code=400, detail="Not enough permissions")
     return equipment
 
 
-@router.post("/", response_model=EquipmentPublic)
-def create_equipment(
-    *, session: SessionDep, current_user: CurrentUser, equipment_in: EquipmentCreate
-) -> Any:
+@router.post(
+    "/",
+    dependencies=[Depends(get_current_teacher)],
+    response_model=EquipmentPublic,
+)
+def create_equipment(*, session: SessionDep, equipment_in: EquipmentCreate) -> Any:
     """
     Create new equipment in catalog.
     Only teachers and superusers can create equipments.
     """
-    if not current_user.is_superuser and current_user.role != "teacher":
-        raise HTTPException(
-            status_code=403, detail="Only teachers can create equipments"
-        )
 
-    equipment = Equipment.model_validate(
-        equipment_in, update={"owner_id": current_user.id}
-    )
+    equipment = Equipment.model_validate(equipment_in)
     session.add(equipment)
     session.commit()
     session.refresh(equipment)
     return equipment
 
 
-@router.put("/{id}", response_model=EquipmentPublic)
+@router.put(
+    "/{id}",
+    dependencies=[Depends(get_current_teacher)],
+    response_model=EquipmentPublic,
+)
 def update_equipment(
     *,
     session: SessionDep,
-    current_user: CurrentUser,
     id: UUID,
     equipment_in: EquipmentUpdate,
 ) -> Any:
@@ -92,14 +95,6 @@ def update_equipment(
     if not equipment:
         raise HTTPException(status_code=404, detail="Equipment not found")
 
-    if not current_user.is_superuser and (
-        current_user.role != "teacher" or equipment.owner_id != current_user.id
-    ):
-        raise HTTPException(
-            status_code=403,
-            detail="Not enough permissions",
-        )
-
     update_dict = equipment_in.model_dump(exclude_unset=True)
     equipment.sqlmodel_update(update_dict)
     session.add(equipment)
@@ -108,10 +103,11 @@ def update_equipment(
     return equipment
 
 
-@router.delete("/{id}")
-def delete_equipment(
-    session: SessionDep, current_user: CurrentUser, id: UUID
-) -> Message:
+@router.delete(
+    "/{id}",
+    dependencies=[Depends(get_current_teacher)],
+)
+def delete_equipment(session: SessionDep, id: UUID) -> Message:
     """
     Delete an equipment.
     Only the teacher who created the equipment or superusers can delete it.
@@ -120,32 +116,25 @@ def delete_equipment(
     if not equipment:
         raise HTTPException(status_code=404, detail="Equipment not found")
 
-    if not current_user.is_superuser and (
-        current_user.role != "teacher" or equipment.owner_id != current_user.id
-    ):
-        raise HTTPException(
-            status_code=403,
-            detail="Not enough permissions",
-        )
-
     session.delete(equipment)
     session.commit()
     return Message(message="Equipment deleted successfully")
 
 
-@router.post("/{event_id}/packing", response_model=PackingEquipmentPublic)
+@router.post(
+    "/{event_id}/packing",
+    dependencies=[Depends(get_current_teacher)],
+    response_model=PackingEquipmentPublic,
+)
 def add_packing_equipment(
     *,
     session: SessionDep,
-    current_user: CurrentUser,
     event: EventDep,
     packing_equipment_in: PackingEquipmentCreate,
 ) -> Any:
     """
     Add an equipment to event's packing list.
     """
-    if not current_user.is_superuser and event.created_by_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
 
     equipment = session.get(Equipment, packing_equipment_in.equipment_id)
     if not equipment:

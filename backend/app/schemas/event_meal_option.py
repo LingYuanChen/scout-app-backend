@@ -1,16 +1,10 @@
-from enum import Enum
 from uuid import UUID
 
 from sqlmodel import Field, SQLModel
 
+from app.db.enums import MealType
 
-# Enums
-class MealType(str, Enum):
-    BREAKFAST = "breakfast"
-    LUNCH = "lunch"
-    DINNER = "dinner"
-    SNACK = "snack"
-    LATE_NIGHT = "late_night"
+from .meal import MealPublic
 
 
 class EventMealOptionCreateBase(SQLModel):
@@ -23,3 +17,8 @@ class EventMealOptionCreateBase(SQLModel):
 # Event Meal Option models
 class EventMealOptionCreate(EventMealOptionCreateBase):
     pass
+
+
+class EventMealOptionPublic(EventMealOptionCreateBase):
+    id: UUID
+    meal: MealPublic
