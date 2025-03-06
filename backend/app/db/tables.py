@@ -1,11 +1,15 @@
 import uuid
 from datetime import datetime
 from uuid import UUID
-
+from typing import Optional
 from sqlmodel import Field, Relationship, SQLModel
 
 from .enums import MealType, RoleType
 
+
+class CourseTemplateEquipmentLink(SQLModel, table=True):
+    course_template_id: UUID = Field(foreign_key="coursetemplate.id", primary_key=True)
+    equipment_id: UUID = Field(foreign_key="equipment.id", primary_key=True)
 
 class User(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid.uuid4, primary_key=True)
@@ -32,7 +36,10 @@ class Equipment(SQLModel, table=True):
     event_equipments: list["PackingEquipment"] = Relationship(
         back_populates="equipment"
     )
-
+    course_template_id: Optional[UUID] = Field(default=None, foreign_key="coursetemplate.id")
+    courses: list["CourseTemplate"] = Relationship(
+        back_populates="equipments", link_model=CourseTemplateEquipmentLink
+    )
 
 class Event(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid.uuid4, primary_key=True)
@@ -116,12 +123,18 @@ class Attendance(SQLModel, table=True):
     meal_choices: list[MealChoice] = Relationship(back_populates="attendance")
 
 
-class Course(SQLModel, table=True):
+class CourseTemplate(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     name: str = Field(max_length=255)
     description: str | None = Field(default=None, max_length=1000)
-    created_by_id: UUID = Field(foreign_key="user.id")
+    time_required: float = Field(default_factory=float)
+    created_by: UUID = Field(foreign_key="user.id")
     created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+    location: str = Field(max_length=255)
+    equipments: list["Equipment"] = Relationship(
+        back_populates="courses", link_model=CourseTemplateEquipmentLink
+    )
+
 
 
 __all__ = [
@@ -134,5 +147,5 @@ __all__ = [
     "MealChoice",
     "Attendance",
     "MealType",
-    "Course",
+    "CourseTemplate",
 ]

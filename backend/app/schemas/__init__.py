@@ -50,6 +50,12 @@ from .user import (
     UserUpdate,
     UserUpdateMe,
 )
+from .course_template import(
+    CourseTemplateBase,
+    CourseTemplateCreate,
+    CourseTemplateUpdate,
+    CourseTemplatePublic,
+)
 
 __all__ = [
     # User schemas
@@ -96,4 +102,9 @@ __all__ = [
     "MealChoiceUpdate",
     # Event Meal Option schemas
     "EventMealOptionCreate",
+    # Course Template schemas
+    "CourseTemplateBase",
+    "CourseTemplateCreate",
+    "CourseTemplateUpdate",
+    "CourseTemplatePublic",
 ]
