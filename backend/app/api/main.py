@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from app.api.routes import (
     attendance,
+    course_template,
     equipments,
     events,
     login,
@@ -10,7 +11,6 @@ from app.api.routes import (
     private,
     users,
     utils,
-    course_template,
 )
 from app.core.config import settings
 

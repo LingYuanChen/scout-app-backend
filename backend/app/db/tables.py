@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from uuid import UUID
-from typing import Optional
+
 from sqlmodel import Field, Relationship, SQLModel
 
 from .enums import MealType, RoleType
@@ -10,6 +10,7 @@ from .enums import MealType, RoleType
 class CourseTemplateEquipmentLink(SQLModel, table=True):
     course_template_id: UUID = Field(foreign_key="coursetemplate.id", primary_key=True)
     equipment_id: UUID = Field(foreign_key="equipment.id", primary_key=True)
+
 
 class User(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid.uuid4, primary_key=True)
@@ -36,10 +37,10 @@ class Equipment(SQLModel, table=True):
     event_equipments: list["PackingEquipment"] = Relationship(
         back_populates="equipment"
     )
-    course_template_id: Optional[UUID] = Field(default=None, foreign_key="coursetemplate.id")
     courses: list["CourseTemplate"] = Relationship(
         back_populates="equipments", link_model=CourseTemplateEquipmentLink
     )
+
 
 class Event(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid.uuid4, primary_key=True)
@@ -134,7 +135,6 @@ class CourseTemplate(SQLModel, table=True):
     equipments: list["Equipment"] = Relationship(
         back_populates="courses", link_model=CourseTemplateEquipmentLink
     )
-
 
 
 __all__ = [

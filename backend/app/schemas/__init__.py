@@ -10,6 +10,12 @@ from .auth import (
     TokenPayload,
     UpdatePassword,
 )
+from .course_template import (
+    CourseTemplateBase,
+    CourseTemplateCreate,
+    CourseTemplatePublic,
+    CourseTemplateUpdate,
+)
 from .equipment import (
     EquipmentBase,
     EquipmentCreate,
@@ -49,12 +55,6 @@ from .user import (
     UsersPublic,
     UserUpdate,
     UserUpdateMe,
-)
-from .course_template import(
-    CourseTemplateBase,
-    CourseTemplateCreate,
-    CourseTemplateUpdate,
-    CourseTemplatePublic,
 )
 
 __all__ = [
