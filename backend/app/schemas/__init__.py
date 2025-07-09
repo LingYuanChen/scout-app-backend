@@ -10,6 +10,12 @@ from .auth import (
     TokenPayload,
     UpdatePassword,
 )
+from .course_template import (
+    CourseTemplateBase,
+    CourseTemplateCreate,
+    CourseTemplatePublic,
+    CourseTemplateUpdate,
+)
 from .equipment import (
     EquipmentBase,
     EquipmentCreate,
@@ -96,4 +102,9 @@ __all__ = [
     "MealChoiceUpdate",
     # Event Meal Option schemas
     "EventMealOptionCreate",
+    # Course Template schemas
+    "CourseTemplateBase",
+    "CourseTemplateCreate",
+    "CourseTemplateUpdate",
+    "CourseTemplatePublic",
 ]

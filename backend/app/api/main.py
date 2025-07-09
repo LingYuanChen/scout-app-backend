@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from app.api.routes import (
     attendance,
+    course_template,
     equipments,
     events,
     login,
@@ -22,6 +23,7 @@ api_router.include_router(events.router)
 api_router.include_router(attendance.router)
 api_router.include_router(meals.router)
 api_router.include_router(meal_choices.router)
+api_router.include_router(course_template.router)
 
 if settings.ENVIRONMENT == "local":
     api_router.include_router(private.router)

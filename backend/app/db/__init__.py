@@ -1,5 +1,6 @@
 from .tables import (
     Attendance,
+    CourseTemplate,
     Equipment,
     Event,
     EventMealOption,
@@ -20,4 +21,5 @@ __all__ = [
     "MealChoice",
     "Attendance",
     "MealType",
+    "CourseTemplate",
 ]
